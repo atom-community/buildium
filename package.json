@@ -1,5 +1,5 @@
 {
-  "name": "build",
+  "name": "buildium",
   "main": "./lib/build",
   "version": "0.70.0",
   "description": "Build your current project, directly from Atom",

@@ -1,15 +1,13 @@
 # Atom Build package
 
-[Release notes](https://github.com/noseglid/atom-build/releases)
+[Release notes](https://github.com/idleberg/atom-buildium/releases)
 
-[![Plugin installs](https://img.shields.io/apm/dm/build.svg?style=flat-square)](https://atom.io/packages/build)
-[![Package version](https://img.shields.io/apm/v/build.svg?style=flat-square)](https://atom.io/packages/build)
+[![Plugin installs](https://img.shields.io/apm/dm/buildiumsvg?style=flat-square)](https://atom.io/packages/buildium)
+[![Package version](https://img.shields.io/apm/v/buildium.svg?style=flat-square)](https://atom.io/packages/buildium)
 
-[![Travis.ci Shield](https://img.shields.io/travis/noseglid/atom-build/master.svg?style=flat-square&label=travis%20ci)](https://travis-ci.org/noseglid/atom-build)
-[![AppVeyor Shield](https://img.shields.io/appveyor/ci/noseglid/atom-build/master.svg?style=flat-square&label=appveyor )](https://ci.appveyor.com/project/noseglid/atom-build)
+[![Travis.ci Shield](https://img.shields.io/travis/idleberg/atom-buildium/master.svg?style=flat-square&label=travis%20ci)](https://travis-ci.org/idleberg/atom-buildium)
+[![AppVeyor Shield](https://img.shields.io/appveyor/ci/idleberg/atom-buildium/master.svg?style=flat-square&label=appveyor )](https://ci.appveyor.com/project/idleberg/atom-buildium)
 
-[![Gitter chat](https://img.shields.io/badge/gitter-noseglid%2Fatom--build-24CE66.svg?style=flat-square)](https://gitter.im/noseglid/atom-build)
-[![Slack Badge](https://img.shields.io/badge/chat-atom.io%20slack-ff69b4.svg?style=flat-square)](http://atom-slack.herokuapp.com/)
 
 
 Automatically build your project inside your new favorite editor, Atom.
@@ -36,7 +34,7 @@ Automatically build your project inside your new favorite editor, Atom.
 
 Install the build package using apm (apm can be installed using the install shell commands tool in Atom)(Linux/Mac):
 ```bash
-$ apm install build
+$ apm install buildium
 ```
 
 Create a file called `.atom-build.yml` (note the inital dot):
@@ -292,21 +290,3 @@ To jump to the first error you can use <kbd>Cmd</kbd> <kbd>Alt</kbd> <kbd>H</kbd
 Install [Atom Linter](https://atom.io/packages/linter) and all your matched errors will listed in a neat panel.
 
 ![Linter integration](https://noseglid.github.io/build-linter.png)
-
-## Analytics
-
-The `atom-build` package uses google analytics to keep track of which features are in use
-and at what frequency. This gives the maintainers a sense of what parts of the
-package is most important and what parts can be removed.
-
-The data is fully anonymous and can not be tracked back to you in any way.
-This is what is collected
-
-  * Version of package used.
-  * Build triggered, succeeded or failed.
-  * Which build tool was used.
-  * Visibility of UI components.
-
-If you really do not want to share this information, you can opt out by disabling
-the [metrics package](https://atom.io/packages/metrics). This will disable all analytics
-collection, including the one from `atom-build`.
