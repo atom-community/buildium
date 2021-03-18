@@ -14,11 +14,11 @@ describe('BuildView', () => {
   temp.track();
 
   beforeEach(() => {
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.stealFocus', true);
-    atom.config.set('build.notificationOnRefresh', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.stealFocus', true);
+    atom.config.set('buildium.notificationOnRefresh', true);
     atom.config.set('editor.fontSize', 14);
     atom.notifications.clear();
 
@@ -122,7 +122,7 @@ describe('BuildView', () => {
   describe('when panel orientation is altered', () => {
     it('should show the panel at the bottom spot', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
-      atom.config.set('build.panelOrientation', 'Bottom');
+      atom.config.set('buildium.panelOrientation', 'Bottom');
 
       fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
         cmd: 'echo this will fail && exit 1'
@@ -144,7 +144,7 @@ describe('BuildView', () => {
 
     it('should show the panel at the top spot', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
-      atom.config.set('build.panelOrientation', 'Top');
+      atom.config.set('buildium.panelOrientation', 'Top');
 
       fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
         cmd: 'echo this will fail && exit 1'
@@ -188,11 +188,11 @@ describe('BuildView', () => {
 
   describe('when hidePanelHeading is set', () => {
     beforeEach(() => {
-      atom.config.set('build.hidePanelHeading', true);
+      atom.config.set('buildium.hidePanelHeading', true);
     });
 
     afterEach(() => {
-      atom.config.set('build.hidePanelHeading', false);
+      atom.config.set('buildium.hidePanelHeading', false);
     });
 
     it('should not show the panel heading', () => {
@@ -228,7 +228,7 @@ describe('BuildView', () => {
 
       runs(() => {
         expect(workspaceElement.querySelector('.build .heading')).toBeHidden();
-        atom.config.set('build.hidePanelHeading', false);
+        atom.config.set('buildium.hidePanelHeading', false);
         expect(workspaceElement.querySelector('.build .heading')).toBeVisible();
       });
     });

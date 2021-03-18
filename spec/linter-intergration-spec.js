@@ -21,11 +21,11 @@ describe('Linter Integration', () => {
     directory = fs.realpathSync(temp.mkdirSync({ prefix: 'atom-build-spec-' }));
     atom.project.setPaths([ directory ]);
 
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.scrollOnError', false);
-    atom.config.set('build.notificationOnRefresh', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.scrollOnError', false);
+    atom.config.set('buildium.notificationOnRefresh', true);
     atom.config.set('editor.fontSize', 14);
 
     jasmine.unspy(window, 'setTimeout');

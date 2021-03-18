@@ -14,11 +14,11 @@ describe('Visible', () => {
   temp.track();
 
   beforeEach(() => {
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.stealFocus', true);
-    atom.config.set('build.notificationOnRefresh', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.stealFocus', true);
+    atom.config.set('buildium.notificationOnRefresh', true);
     atom.notifications.clear();
 
     workspaceElement = atom.views.getView(atom.workspace);
@@ -54,7 +54,7 @@ describe('Visible', () => {
 
   describe('when package is activated with panel visibility set to Keep Visible', () => {
     beforeEach(() => {
-      atom.config.set('build.panelVisibility', 'Keep Visible');
+      atom.config.set('buildium.panelVisibility', 'Keep Visible');
       waitsForPromise(() => {
         return atom.packages.activatePackage('build');
       });
@@ -67,7 +67,7 @@ describe('Visible', () => {
 
   describe('when package is activated with panel visibility set to Toggle', () => {
     beforeEach(() => {
-      atom.config.set('build.panelVisibility', 'Toggle');
+      atom.config.set('buildium.panelVisibility', 'Toggle');
       waitsForPromise(() => {
         return atom.packages.activatePackage('build');
       });
@@ -89,7 +89,7 @@ describe('Visible', () => {
 
     describe('when panel visibility is set to Show on Error', () => {
       it('should only show the build panel if a build fails', () => {
-        atom.config.set('build.panelVisibility', 'Show on Error');
+        atom.config.set('buildium.panelVisibility', 'Show on Error');
 
         fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
           cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
@@ -132,7 +132,7 @@ describe('Visible', () => {
 
     describe('when panel visibility is set to Hidden', () => {
       it('should not show the build panel if build succeeeds', () => {
-        atom.config.set('build.panelVisibility', 'Hidden');
+        atom.config.set('buildium.panelVisibility', 'Hidden');
 
         fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
           cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
@@ -149,7 +149,7 @@ describe('Visible', () => {
       });
 
       it('should not show the build panel if build fails', () => {
-        atom.config.set('build.panelVisibility', 'Hidden');
+        atom.config.set('buildium.panelVisibility', 'Hidden');
 
         fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
           cmd: 'echo "Very bad..." && exit 2'
@@ -166,7 +166,7 @@ describe('Visible', () => {
       });
 
       it('should show the build panel if it is toggled', () => {
-        atom.config.set('build.panelVisibility', 'Hidden');
+        atom.config.set('buildium.panelVisibility', 'Hidden');
 
         fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
           cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'

@@ -23,11 +23,11 @@ describe('Build', () => {
   temp.track();
 
   beforeEach(() => {
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.stealFocus', true);
-    atom.config.set('build.notificationOnRefresh', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.stealFocus', true);
+    atom.config.set('buildium.notificationOnRefresh', true);
     atom.notifications.clear();
 
     workspaceElement = atom.views.getView(atom.workspace);
@@ -390,7 +390,7 @@ describe('Build', () => {
 
   describe('when the text editor is saved', () => {
     it('should build when buildOnSave is true', () => {
-      atom.config.set('build.buildOnSave', true);
+      atom.config.set('buildium.buildOnSave', true);
 
       fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
         cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
@@ -415,7 +415,7 @@ describe('Build', () => {
     });
 
     it('should not build when buildOnSave is false', () => {
-      atom.config.set('build.buildOnSave', false);
+      atom.config.set('buildium.buildOnSave', false);
 
       fs.writeFileSync(directory + '.atom-build.json', {
         cmd: 'echo "hello, world"'
@@ -434,7 +434,7 @@ describe('Build', () => {
     });
 
     it('should not attempt to build if buildOnSave is true and no build tool exists', () => {
-      atom.config.set('build.buildOnSave', true);
+      atom.config.set('buildium.buildOnSave', true);
 
       fs.writeFileSync(directory + '.atom-build.json', {
         cmd: 'echo "hello, world"'
@@ -547,7 +547,7 @@ describe('Build', () => {
     it('should leave focus untouched if stealFocus is false', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.config.set('build.stealFocus', false);
+      atom.config.set('buildium.stealFocus', false);
       const activeElement = document.activeElement;
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(goodAtomBuildfile));

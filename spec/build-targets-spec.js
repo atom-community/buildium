@@ -14,11 +14,11 @@ describe('Target', () => {
   temp.track();
 
   beforeEach(() => {
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.notificationOnRefresh', true);
-    atom.config.set('build.refreshOnShowTargetList', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.notificationOnRefresh', true);
+    atom.config.set('buildium.refreshOnShowTargetList', true);
 
     jasmine.unspy(window, 'setTimeout');
     jasmine.unspy(window, 'clearTimeout');

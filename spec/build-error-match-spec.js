@@ -32,11 +32,11 @@ describe('Error Match', () => {
     directory = fs.realpathSync(temp.mkdirSync({ prefix: 'atom-build-spec-' })) + path.sep;
     atom.project.setPaths([ directory ]);
 
-    atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.panelVisibility', 'Toggle');
-    atom.config.set('build.saveOnBuild', false);
-    atom.config.set('build.scrollOnError', false);
-    atom.config.set('build.notificationOnRefresh', true);
+    atom.config.set('buildium.buildOnSave', false);
+    atom.config.set('buildium.panelVisibility', 'Toggle');
+    atom.config.set('buildium.saveOnBuild', false);
+    atom.config.set('buildium.scrollOnError', false);
+    atom.config.set('buildium.notificationOnRefresh', true);
     atom.config.set('editor.fontSize', 14);
     atom.notifications.clear();
 
@@ -114,7 +114,7 @@ describe('Error Match', () => {
 
     it('should place the line and column on warning in correct file', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
-      atom.config.set('build.matchedErrorFailsBuild', true);
+      atom.config.set('buildium.matchedErrorFailsBuild', true);
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(warningMatchAtomBuildFile));
 
@@ -395,7 +395,7 @@ describe('Error Match', () => {
     });
 
     it('should auto match error on failed build when config is set', () => {
-      atom.config.set('build.scrollOnError', true);
+      atom.config.set('buildium.scrollOnError', true);
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(errorMatchAtomBuildFile));
 
