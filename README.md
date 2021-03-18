@@ -19,17 +19,6 @@ Automatically build your project inside your new favorite editor, Atom.
   * <kbd>Cmd</kbd> <kbd>Alt</kbd> <kbd>T</kbd> / <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>T</kbd> / <kbd>F7</kbd> Displays the available build targets.
   * <kbd>Esc</kbd> terminates build / closes the build window.
 
-#### Builds your project - configure it your way
-![work work](https://noseglid.github.io/build.gif)
-
-#### Automatically extract targets - here with [build-make](https://github.com/AtomBuild/atom-build-make).
-![targets](https://noseglid.github.io/targets-make.gif)
-
-#### Match errors and go directly to offending code - with [Atom Linter](https://atom.io/packages/linter).
-![error matching](https://noseglid.github.io/error-match.gif)
-
-(You can also use keyboard shortcuts to go to errors if you don't like Atom Linter, or want to keep package dependencies to a minimum).
-
 ### Quick start
 
 Install the build package using apm (apm can be installed using the install shell commands tool in Atom)(Linux/Mac):
