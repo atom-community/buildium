@@ -1,7 +1,6 @@
 import { SelectListView } from 'atom-space-pen-views';
 
 export default class TargetsView extends SelectListView {
-
   constructor() {
     super(...arguments);
     this.show();
@@ -40,13 +39,13 @@ export default class TargetsView extends SelectListView {
   viewForItem(targetName) {
     const activeTarget = this.activeTarget;
     return TargetsView.render(function () {
-      const activeClass = (targetName === activeTarget ? 'active' : '');
+      const activeClass = targetName === activeTarget ? 'active' : '';
       this.li({ class: activeClass + ' build-target' }, targetName);
     });
   }
 
   getEmptyMessage(itemCount) {
-    return (0 === itemCount) ? 'No targets found.' : 'No matches';
+    return 0 === itemCount ? 'No targets found.' : 'No matches';
   }
 
   awaitSelection() {

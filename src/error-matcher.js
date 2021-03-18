@@ -4,7 +4,6 @@ import path from 'path';
 import XRegExp from 'xregexp';
 
 export default class ErrorMatcher extends EventEmitter {
-
   constructor() {
     super();
     this.regex = null;
@@ -15,7 +14,11 @@ export default class ErrorMatcher extends EventEmitter {
     this.firstMatchId = null;
 
     atom.commands.add('atom-workspace', 'build:error-match', ::this.match);
-    atom.commands.add('atom-workspace', 'build:error-match-first', ::this.matchFirst);
+    atom.commands.add(
+      'atom-workspace',
+      'build:error-match-first',
+      ::this.matchFirst
+    );
   }
 
   _gotoNext() {
@@ -27,9 +30,9 @@ export default class ErrorMatcher extends EventEmitter {
   }
 
   goto(id) {
-    const match = this.currentMatch.find(m => m.id === id);
+    const match = this.currentMatch.find((m) => m.id === id);
     if (!match) {
-      this.emit('error', 'Can\'t find match with id ' + id);
+      this.emit('error', "Can't find match with id " + id);
       return;
     }
 
@@ -41,7 +44,7 @@ export default class ErrorMatcher extends EventEmitter {
 
     let file = match.file;
     if (!file) {
-      this.emit('error', 'Did not match any file. Don\'t know what to open.');
+      this.emit('error', "Did not match any file. Don't know what to open.");
       return;
     }
 
@@ -49,7 +52,9 @@ export default class ErrorMatcher extends EventEmitter {
       file = this.cwd + path.sep + file;
     }
 
-    const row = match.line ? match.line - 1 : 0; /* Because atom is zero-based */
+    const row = match.line
+      ? match.line - 1
+      : 0; /* Because atom is zero-based */
     const col = match.col ? match.col - 1 : 0; /* Because atom is zero-based */
 
     fs.exists(file, (exists) => {
@@ -70,35 +75,42 @@ export default class ErrorMatcher extends EventEmitter {
     this.currentMatch = [];
 
     // first run all functional matches
-    this.functions && this.functions.forEach((f, functionIndex) => {
-      this.currentMatch = this.currentMatch.concat(f(this.output).map((match, matchIndex) => {
-        match.id = 'error-match-function-' + functionIndex + '-' + matchIndex;
-        match.type = match.type || 'Error';
-        return match;
-      }));
-    });
-    // then for all match kinds
-    Object.keys(this.regex).forEach(kind => {
-      // run all matches
-      this.regex[kind] && this.regex[kind].forEach((regex, i) => {
-        regex && XRegExp.forEach(this.output, regex, (match, matchIndex) => {
-          match.id = 'error-match-' + i + '-' + matchIndex;
-          match.type = kind;
-          this.currentMatch.push(match);
-        });
+    this.functions &&
+      this.functions.forEach((f, functionIndex) => {
+        this.currentMatch = this.currentMatch.concat(
+          f(this.output).map((match, matchIndex) => {
+            match.id =
+              'error-match-function-' + functionIndex + '-' + matchIndex;
+            match.type = match.type || 'Error';
+            return match;
+          })
+        );
       });
+    // then for all match kinds
+    Object.keys(this.regex).forEach((kind) => {
+      // run all matches
+      this.regex[kind] &&
+        this.regex[kind].forEach((regex, i) => {
+          regex &&
+            XRegExp.forEach(this.output, regex, (match, matchIndex) => {
+              match.id = 'error-match-' + i + '-' + matchIndex;
+              match.type = kind;
+              this.currentMatch.push(match);
+            });
+        });
     });
 
     this.currentMatch.sort((a, b) => a.index - b.index);
 
-    this.firstMatchId = (this.currentMatch.length > 0) ? this.currentMatch[0].id : null;
+    this.firstMatchId =
+      this.currentMatch.length > 0 ? this.currentMatch[0].id : null;
   }
 
   _prepareRegex(regex) {
     regex = regex || [];
-    regex = (regex instanceof Array) ? regex : [ regex ];
+    regex = regex instanceof Array ? regex : [regex];
 
-    return regex.map(r => {
+    return regex.map((r) => {
       try {
         return XRegExp(r);
       } catch (err) {
@@ -110,9 +122,15 @@ export default class ErrorMatcher extends EventEmitter {
 
   set(target, cwd, output) {
     if (target.functionMatch) {
-      this.functions = ((target.functionMatch instanceof Array) ? target.functionMatch : [ target.functionMatch ]).filter(f => {
+      this.functions = (target.functionMatch instanceof Array
+        ? target.functionMatch
+        : [target.functionMatch]
+      ).filter((f) => {
         if (typeof f !== 'function') {
-          this.emit('error', 'found functionMatch that is no function: ' + typeof f);
+          this.emit(
+            'error',
+            'found functionMatch that is no function: ' + typeof f
+          );
           return false;
         }
         return true;

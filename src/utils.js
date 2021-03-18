@@ -4,10 +4,10 @@ import path from 'path';
 const uniquifySettings = (settings) => {
   const genName = (name, index) => `${name} - ${index}`;
   const newSettings = [];
-  settings.forEach(setting => {
+  settings.forEach((setting) => {
     let i = 0;
     let testName = setting.name;
-    while (newSettings.find(ns => ns.name === testName)) { // eslint-disable-line no-loop-func
+    while (newSettings.find((ns) => ns.name === testName)) {
       testName = genName(setting.name, ++i);
     }
     newSettings.push({ ...setting, name: testName });
@@ -27,15 +27,21 @@ const activePath = () => {
   }
 
   /* otherwise, build the one in the root of the active editor */
-  return atom.project.getPaths().sort((a, b) => (b.length - a.length)).find(p => {
-    try {
-      const realpath = fs.realpathSync(p);
-      return fs.realpathSync(textEditor.getPath()).substr(0, realpath.length) === realpath;
-    } catch (err) {
-      /* Path no longer available. Possible network volume has gone down */
-      return false;
-    }
-  });
+  return atom.project
+    .getPaths()
+    .sort((a, b) => b.length - a.length)
+    .find((p) => {
+      try {
+        const realpath = fs.realpathSync(p);
+        return (
+          fs.realpathSync(textEditor.getPath()).substr(0, realpath.length) ===
+          realpath
+        );
+      } catch (err) {
+        /* Path no longer available. Possible network volume has gone down */
+        return false;
+      }
+    });
 };
 
 const getDefaultSettings = (cwd, setting) => {
@@ -43,7 +49,7 @@ const getDefaultSettings = (cwd, setting) => {
     env: setting.env || {},
     args: setting.args || [],
     cwd: setting.cwd || cwd,
-    sh: (undefined === setting.sh) ? true : setting.sh,
+    sh: undefined === setting.sh ? true : setting.sh,
     errorMatch: setting.errorMatch || ''
   });
 };
@@ -60,30 +66,46 @@ const replace = (value = '', targetEnv) => {
 
   const editor = atom.workspace.getActiveTextEditor();
 
-  const projectPaths = atom.project.getPaths().map(projectPath => {
+  const projectPaths = atom.project.getPaths().map((projectPath) => {
     try {
       return fs.realpathSync(projectPath);
-    } catch (e) { /* Do nothing. */ }
+    } catch (e) {
+      /* Do nothing. */
+    }
     return null;
   });
 
   let projectPath = projectPaths[0];
-  if (editor && (undefined !== editor.getPath())) {
+  if (editor && undefined !== editor.getPath()) {
     const activeFile = fs.realpathSync(editor.getPath());
     const activeFilePath = path.dirname(activeFile);
-    projectPath = projectPaths.find(p => activeFilePath && activeFilePath.startsWith(p));
+    projectPath = projectPaths.find(
+      (p) => activeFilePath && activeFilePath.startsWith(p)
+    );
     value = value.replace(/{FILE_ACTIVE}/g, activeFile);
     value = value.replace(/{FILE_ACTIVE_PATH}/g, activeFilePath);
     value = value.replace(/{FILE_ACTIVE_NAME}/g, path.basename(activeFile));
-    value = value.replace(/{FILE_ACTIVE_NAME_BASE}/g, path.basename(activeFile, path.extname(activeFile)));
+    value = value.replace(
+      /{FILE_ACTIVE_NAME_BASE}/g,
+      path.basename(activeFile, path.extname(activeFile))
+    );
     value = value.replace(/{SELECTION}/g, editor.getSelectedText());
     const cursorScreenPosition = editor.getCursorScreenPosition();
-    value = value.replace(/{FILE_ACTIVE_CURSOR_ROW}/g, cursorScreenPosition.row + 1);
-    value = value.replace(/{FILE_ACTIVE_CURSOR_COLUMN}/g, cursorScreenPosition.column + 1);
+    value = value.replace(
+      /{FILE_ACTIVE_CURSOR_ROW}/g,
+      cursorScreenPosition.row + 1
+    );
+    value = value.replace(
+      /{FILE_ACTIVE_CURSOR_COLUMN}/g,
+      cursorScreenPosition.column + 1
+    );
   }
   value = value.replace(/{PROJECT_PATH}/g, projectPath);
   if (atom.project.getRepositories[0]) {
-    value = value.replace(/{REPO_BRANCH_SHORT}/g, atom.project.getRepositories()[0].getShortHead());
+    value = value.replace(
+      /{REPO_BRANCH_SHORT}/g,
+      atom.project.getRepositories()[0].getShortHead()
+    );
   }
 
   return value;

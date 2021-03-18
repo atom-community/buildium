@@ -40,7 +40,7 @@ export default class StatusBarView extends View {
 
   static content() {
     this.div({ id: 'build-status-bar', class: 'inline-block' }, () => {
-      this.a({ click: 'clicked', outlet: 'message'});
+      this.a({ click: 'clicked', outlet: 'message' });
     });
   }
 

@@ -5,11 +5,29 @@ export default class SaveConfirmView extends View {
     this.div({ class: 'build-confirm overlay from-top' }, () => {
       this.h3('You have unsaved changes');
       this.div({ class: 'btn-container pull-right' }, () => {
-        this.button({ class: 'btn btn-success', outlet: 'saveBuildButton', title: 'Save and Build', click: 'saveAndConfirm' }, 'Save and build');
-        this.button({ class: 'btn btn-info', title: 'Build Without Saving', click: 'confirmWithoutSave' }, 'Build Without Saving');
+        this.button(
+          {
+            class: 'btn btn-success',
+            outlet: 'saveBuildButton',
+            title: 'Save and Build',
+            click: 'saveAndConfirm'
+          },
+          'Save and build'
+        );
+        this.button(
+          {
+            class: 'btn btn-info',
+            title: 'Build Without Saving',
+            click: 'confirmWithoutSave'
+          },
+          'Build Without Saving'
+        );
       });
       this.div({ class: 'btn-container pull-left' }, () => {
-        this.button({ class: 'btn btn-info', title: 'Cancel', click: 'cancel' }, 'Cancel');
+        this.button(
+          { class: 'btn btn-info', title: 'Cancel', click: 'cancel' },
+          'Cancel'
+        );
       });
     });
   }

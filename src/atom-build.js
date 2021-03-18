@@ -60,7 +60,7 @@ export default class CustomFile extends EventEmitter {
   }
 
   destructor() {
-    this.fileWatchers.forEach(fw => fw.close());
+    this.fileWatchers.forEach((fw) => fw.close());
   }
 
   getNiceName() {
@@ -68,26 +68,35 @@ export default class CustomFile extends EventEmitter {
   }
 
   isEligible() {
-    this.files = [].concat.apply([], [ 'json', 'cson', 'yaml', 'yml', 'js' ].map(ext => [
-      path.join(this.cwd, `.atom-build.${ext}`),
-      path.join(os.homedir(), `.atom-build.${ext}`)
-    ])).filter(fs.existsSync);
+    this.files = [].concat
+      .apply(
+        [],
+        ['json', 'cson', 'yaml', 'yml', 'js'].map((ext) => [
+          path.join(this.cwd, `.atom-build.${ext}`),
+          path.join(os.homedir(), `.atom-build.${ext}`)
+        ])
+      )
+      .filter(fs.existsSync);
     return 0 < this.files.length;
   }
 
   settings() {
-    this.fileWatchers.forEach(fw => fw.close());
+    this.fileWatchers.forEach((fw) => fw.close());
     // On Linux, closing a watcher triggers a new callback, which causes an infinite loop
     // fallback to `watchFile` here which polls instead.
-    this.fileWatchers = this.files.map(file =>
-      (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () => this.emit('refresh'))
+    this.fileWatchers = this.files.map((file) =>
+      (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () =>
+        this.emit('refresh')
+      )
     );
 
     const config = [];
-    this.files.map(getConfig).forEach(build => {
+    this.files.map(getConfig).forEach((build) => {
       config.push(
         createBuildConfig(build, build.name || 'default'),
-        ...Object.keys(build.targets || {}).map(name => createBuildConfig(build.targets[name], name))
+        ...Object.keys(build.targets || {}).map((name) =>
+          createBuildConfig(build.targets[name], name)
+        )
       );
     });
 
