@@ -334,13 +334,13 @@ export default {
           {
             text: 'Don\'t Ask Again',
             onDidClick() {
-              atom.config.set('buildium.muteConflictWarning', true)
+              atom.config.set('buildium.muteConflictWarning', true);
               return notification.dismiss();
             }
           }
         ]
       }
-    )
+    );
   },
 
   consumeLinterRegistry(registry) {

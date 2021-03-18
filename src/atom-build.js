@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import CSON from 'cson-parser';
 import YAML from 'js-yaml';
 
 function getConfig(file) {
@@ -14,7 +15,7 @@ function getConfig(file) {
       return fs.readFileSync(realFile);
 
     case '.cson':
-      // return CSON.parse(fs.readFileSync(realFile));
+      return CSON.parse(fs.readFileSync(realFile));
 
     case '.yaml':
     case '.yml':

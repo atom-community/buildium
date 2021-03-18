@@ -3,5 +3,9 @@
   "rules": {
     "new-cap": [ 2, { "capIsNewExceptions": [ "XRegExp" ] } ]
   },
-  "extends": "atom-build"
+  "extends": "atom-build",
+  "ignorePatterns": [
+    "lib",
+    "spec"
+  ]
 }
