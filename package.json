@@ -3,7 +3,7 @@
   "main": "./lib/build",
   "version": "0.70.0",
   "description": "Build your current project, directly from Atom",
-  "repository": "https://github.com/noseglid/atom-build",
+  "repository": "https://github.com/idleberg/atom-buildium",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0"
