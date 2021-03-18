@@ -8,8 +8,6 @@
 [![Travis.ci Shield](https://img.shields.io/travis/idleberg/atom-buildium/master.svg?style=flat-square&label=travis%20ci)](https://travis-ci.org/idleberg/atom-buildium)
 [![AppVeyor Shield](https://img.shields.io/appveyor/ci/idleberg/atom-buildium/master.svg?style=flat-square&label=appveyor )](https://ci.appveyor.com/project/idleberg/atom-buildium)
 
-
-
 Automatically build your project inside your new favorite editor, Atom.
 
   * <kbd>Cmd</kbd> <kbd>Alt</kbd> <kbd>B</kbd> / <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>B</kbd> / <kbd>F9</kbd> builds your project.
