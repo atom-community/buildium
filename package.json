@@ -2,7 +2,6 @@
   "name": "buildium",
   "version": "0.71.1",
   "description": "Build your current project, directly from Atom",
-  "repository": "https://github.com/idleberg/atom-buildium",
   "keywords": [
     "build",
     "compile",
@@ -10,10 +9,8 @@
     "make",
     "productivity"
   ],
+  "repository": "https://github.com/idleberg/atom-buildium",
   "main": "./lib/build",
-  "engines": {
-    "atom": ">=1.0.0"
-  },
   "scripts": {
     "build": "npm run clean && rollup --config",
     "dev": "npm run start",
@@ -23,6 +20,15 @@
     "lint": "npm-run-all --parallel lint:*",
     "start": "rollup --watch --config",
     "test": "eslint ."
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,json,md}": "prettier --write"
   },
   "dependencies": {
     "atom-package-deps": "^4.0.1",
@@ -61,9 +67,9 @@
     "stylelint": "^13.12.0",
     "temp": "^0.8.1"
   },
-  "package-deps": [
-    "busy-signal"
-  ],
+  "engines": {
+    "atom": ">=1.0.0"
+  },
   "activationHooks": [
     "core:loaded-shell-environment"
   ],
@@ -89,13 +95,7 @@
       }
     }
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": "eslint --cache --fix",
-    "*.{js,md}": "prettier --write"
-  }
+  "package-deps": [
+    "busy-signal"
+  ]
 }
