@@ -37,24 +37,33 @@ describe('Build', () => {
     jasmine.unspy(window, 'clearTimeout');
 
     waitsForPromise(() => {
-      return specHelpers.vouch(temp.mkdir, 'atom-build-spec-').then( (dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then( (dir) => {
-        directory = dir + path.sep;
-        atom.project.setPaths([ directory ]);
-        return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
-      }).then( (dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then( (dir) => {
-        os.homedir = () => dir;
-        return atom.packages.activatePackage('build');
-      });
+      return specHelpers
+        .vouch(temp.mkdir, 'atom-build-spec-')
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          directory = dir + path.sep;
+          atom.project.setPaths([directory]);
+          return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
+        })
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          os.homedir = () => dir;
+          return atom.packages.activatePackage('build');
+        });
     });
   });
 
   afterEach(() => {
     os.homedir = originalHomedirFn;
-    try { fs.removeSync(directory); } catch (e) { console.warn('Failed to clean up: ', e); }
+    try {
+      fs.removeSync(directory);
+    } catch (e) {
+      console.warn('Failed to clean up: ', e);
+    }
   });
 
   describe('when package is activated', () => {
@@ -67,15 +76,17 @@ describe('Build', () => {
     it('should show build failed if build fails', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Very bad... && exit 1'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Very bad... && exit 1'
+        })
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('error');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('error');
       });
 
       runs(() => {
@@ -87,27 +98,32 @@ describe('Build', () => {
     it('should fail build, if errors are matched', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo __ERROR__ && exit 0',
-        errorMatch: 'ERROR'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo __ERROR__ && exit 0',
+          errorMatch: 'ERROR'
+        })
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('error');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('error');
       });
     });
 
     it('should cancel build when stopping it, and remove when stopping again', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: `echo "Building, this will take some time..." && ${sleep(30)} && echo "Done!"`
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: `echo "Building, this will take some time..." && ${sleep(30)} && echo "Done!"`
+        })
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       // Let build run for one second before we terminate it
       waits(1000);
@@ -115,28 +131,27 @@ describe('Build', () => {
       runs(() => {
         expect(workspaceElement.querySelector('.build')).toExist();
         expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/Building, this will take some time.../);
-        atom.commands.dispatch(workspaceElement, 'build:stop');
-        atom.commands.dispatch(workspaceElement, 'build:stop');
+        atom.commands.dispatch(workspaceElement, 'buildium:stop');
+        atom.commands.dispatch(workspaceElement, 'buildium:stop');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('error');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('error');
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:stop');
+        atom.commands.dispatch(workspaceElement, 'buildium:stop');
       });
 
       waitsFor(() => {
-        return (!workspaceElement.querySelector('.build .title'));
+        return !workspaceElement.querySelector('.build .title');
       });
     });
 
     it('should not show the build panel if no build file exists', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.commands.dispatch(workspaceElement, 'build:trigger');
+      atom.commands.dispatch(workspaceElement, 'buildium:trigger');
 
       /* Give it some time here. There's nothing to probe for as we expect the exact same state when done. */
       waits(waitTime);
@@ -149,15 +164,16 @@ describe('Build', () => {
     it('should automatically refresh if build is triggered an no targets are found', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo hello world'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo hello world'
+        })
+      );
 
-      atom.commands.dispatch(workspaceElement, 'build:trigger');
+      atom.commands.dispatch(workspaceElement, 'buildium:trigger');
 
-      waitsFor(() =>
-        workspaceElement.querySelector('.build .title') &&
-        workspaceElement.querySelector('.build .title').classList.contains('success'));
+      waitsFor(() => workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success'));
 
       runs(() => {
         expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/hello world/);
@@ -169,13 +185,16 @@ describe('Build', () => {
     it('should not leave multiple panels behind', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
+      atom.commands.dispatch(workspaceElement, 'buildium:toggle-panel');
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo hello world'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo hello world'
+        })
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
         return workspaceElement.querySelector('.build .title').classList.contains('success');
@@ -185,7 +204,7 @@ describe('Build', () => {
 
       runs(() => {
         expect(workspaceElement.querySelectorAll('.bottom.tool-panel.panel-bottom').length).toBe(1);
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waits(50);
@@ -200,16 +219,18 @@ describe('Build', () => {
     it('should show the build window', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: cat(),
-        args: [ '.atom-build.json' ]
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: cat(),
+          args: ['.atom-build.json']
+        })
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -223,11 +244,10 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(shellAtomBuildfile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -241,11 +261,10 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(shTrueAtomBuildFile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -261,11 +280,10 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(shFalseAtomBuildFile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -279,11 +297,10 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(shDefaultAtomBuildFile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -297,14 +314,14 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(syntaxErrorAtomBuildFile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return atom.notifications.getNotifications().find(n => n.getType() === 'error');
+        return atom.notifications.getNotifications().find((n) => n.getType() === 'error');
       });
 
       runs(() => {
-        const notification = atom.notifications.getNotifications().find(n => n.getType() === 'error');
+        const notification = atom.notifications.getNotifications().find((n) => n.getType() === 'error');
         expect(notification.getType()).toEqual('error');
         expect(notification.getMessage()).toEqual('Invalid build file.');
         expect(notification.options.detail).toMatch(/Unexpected token t/);
@@ -314,15 +331,17 @@ describe('Build', () => {
     it('should not cache the contents of the build file', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo first'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo first'
+        })
+      );
 
-      atom.commands.dispatch(workspaceElement, 'build:trigger');
+      atom.commands.dispatch(workspaceElement, 'buildium:trigger');
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -334,18 +353,20 @@ describe('Build', () => {
       });
 
       runs(() => {
-        fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-          cmd: 'echo second'
-        }));
+        fs.writeFileSync(
+          directory + '.atom-build.json',
+          JSON.stringify({
+            cmd: 'echo second'
+          })
+        );
       });
 
       waitsForPromise(() => specHelpers.refreshAwaitTargets());
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -363,13 +384,17 @@ describe('Build', () => {
 
       waitsForPromise(() => atom.workspace.open('.atom-build.json'));
 
-      runs(() => atom.workspace.getActiveTextEditor().setSelectedBufferRange([[1, 3], [1, 6]]));
+      runs(() =>
+        atom.workspace.getActiveTextEditor().setSelectedBufferRange([
+          [1, 3],
+          [1, 6]
+        ])
+      );
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -392,9 +417,12 @@ describe('Build', () => {
     it('should build when buildOnSave is true', () => {
       atom.config.set('buildium.buildOnSave', true);
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open('dummy'));
 
@@ -404,13 +432,14 @@ describe('Build', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
         expect(workspaceElement.querySelector('.build')).toExist();
-        expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/Surprising is the passing of time but not so, as the time of passing/);
+        expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(
+          /Surprising is the passing of time but not so, as the time of passing/
+        );
       });
     });
 
@@ -462,21 +491,23 @@ describe('Build', () => {
       atom.project.addPath(directory2);
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      fs.writeFileSync(directory2 + '.atom-build.json', JSON.stringify({
-        cmd: cat(),
-        args: [ '.atom-build.json' ]
-      }));
+      fs.writeFileSync(
+        directory2 + '.atom-build.json',
+        JSON.stringify({
+          cmd: cat(),
+          args: ['.atom-build.json']
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open(directory2 + '/main.c'));
 
       runs(() => {
         atom.workspace.getActiveTextEditor().save();
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -487,27 +518,29 @@ describe('Build', () => {
 
     it('should scan new project roots when they are added', () => {
       const directory2 = fs.realpathSync(temp.mkdirSync({ prefix: 'atom-build-spec-' })) + '/';
-      fs.writeFileSync(directory2 + '.atom-build.json', JSON.stringify({
-        cmd: cat(),
-        args: [ '.atom-build.json' ]
-      }));
+      fs.writeFileSync(
+        directory2 + '.atom-build.json',
+        JSON.stringify({
+          cmd: cat(),
+          args: ['.atom-build.json']
+        })
+      );
 
       waitsForPromise(() => specHelpers.refreshAwaitTargets());
 
       waitsForPromise(() => {
         const promise = specHelpers.awaitTargets();
         atom.project.addPath(directory2);
-        return Promise.all([ promise, atom.workspace.open(directory2 + '/main.c') ]);
+        return Promise.all([promise, atom.workspace.open(directory2 + '/main.c')]);
       });
 
       runs(() => {
         atom.workspace.getActiveTextEditor().save();
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -521,7 +554,7 @@ describe('Build', () => {
     it('should show the build panel', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
+      atom.commands.dispatch(workspaceElement, 'buildium:toggle-panel');
 
       expect(workspaceElement.querySelector('.build')).toExist();
     });
@@ -533,7 +566,7 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(goodAtomBuildfile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
         return workspaceElement.querySelector('.build');
@@ -552,7 +585,7 @@ describe('Build', () => {
 
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(goodAtomBuildfile));
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
       waitsFor(() => {
         return workspaceElement.querySelector('.build');
@@ -568,12 +601,12 @@ describe('Build', () => {
   describe('when no build tools are available', () => {
     it('should show a warning', () => {
       expect(workspaceElement.querySelector('.build')).not.toExist();
-      atom.commands.dispatch(workspaceElement, 'build:trigger');
+      atom.commands.dispatch(workspaceElement, 'buildium:trigger');
 
-      waitsFor(() => atom.notifications.getNotifications().find(n => n.getMessage() === 'No eligible build target.'));
+      waitsFor(() => atom.notifications.getNotifications().find((n) => n.getMessage() === 'No eligible build target.'));
 
       runs(() => {
-        const notification = atom.notifications.getNotifications().find(n => n.getMessage() === 'No eligible build target.');
+        const notification = atom.notifications.getNotifications().find((n) => n.getMessage() === 'No eligible build target.');
         expect(notification.getType()).toEqual('warning');
       });
     });

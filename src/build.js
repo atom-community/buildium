@@ -36,14 +36,12 @@ export default {
     this.setupBuildView();
     this.setupErrorMatcher();
 
-    atom.commands.add('atom-workspace', 'build:trigger', () =>
-      this.build('trigger')
-    );
-    atom.commands.add('atom-workspace', 'build:stop', () => this.stop());
-    atom.commands.add('atom-workspace', 'build:confirm', () => {
+    atom.commands.add('atom-workspace', 'buildium:trigger', () => this.build('trigger'));
+    atom.commands.add('atom-workspace', 'buildium:stop', () => this.stop());
+    atom.commands.add('atom-workspace', 'buildium:confirm', () => {
       document.activeElement.click();
     });
-    atom.commands.add('atom-workspace', 'build:no-confirm', () => {
+    atom.commands.add('atom-workspace', 'buildium:no-confirm', () => {
       if (this.saveConfirmView) {
         this.saveConfirmView.cancel();
       }
@@ -58,14 +56,9 @@ export default {
     });
 
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
-    atom.packages.onDidActivateInitialPackages(() =>
-      this.targetManager.refreshTargets()
-    );
+    atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
 
-    if (
-      !atom.config.get('buildium.muteConflictWarning') &&
-      !atom.packages.isPackageDisabled('build')
-    ) {
+    if (!atom.config.get('buildium.muteConflictWarning') && !atom.packages.isPackageDisabled('build')) {
       this.disableBuild();
     }
   },
@@ -83,9 +76,7 @@ export default {
         this.build('trigger');
       }
     });
-    this.targetManager.on('trigger', (atomCommandName) =>
-      this.build('trigger', atomCommandName)
-    );
+    this.targetManager.on('trigger', (atomCommandName) => this.build('trigger', atomCommandName));
   },
 
   setupBuildView() {
@@ -123,9 +114,7 @@ export default {
   updateStatusBar() {
     const path = Utils.activePath();
     const activeTarget = this.targetManager.getActiveTarget(path);
-    this.statusBarView &&
-      activeTarget &&
-      this.statusBarView.setTarget(activeTarget.name);
+    this.statusBarView && activeTarget && this.statusBarView.setTarget(activeTarget.name);
   },
 
   startNewBuild(source, atomCommandName) {
@@ -136,10 +125,7 @@ export default {
     Promise.resolve(this.targetManager.getTargets(path))
       .then((targets) => {
         if (!targets || 0 === targets.length) {
-          throw new BuildError(
-            'No eligible build target.',
-            'No configuration to build this project exists.'
-          );
+          throw new BuildError('No eligible build target.', 'No configuration to build this project exists.');
         }
 
         let target = targets.find((t) => t.atomCommandName === atomCommandName);
@@ -148,10 +134,7 @@ export default {
         }
 
         if (!target.exec) {
-          throw new BuildError(
-            'Invalid build file.',
-            'No executable command specified.'
-          );
+          throw new BuildError('Invalid build file.', 'No executable command specified.');
         }
 
         this.statusBarView && this.statusBarView.buildStarted();
@@ -159,9 +142,7 @@ export default {
         this.buildView.buildStarted();
         this.buildView.setHeading('Running preBuild...');
 
-        return Promise.resolve(target.preBuild ? target.preBuild() : null).then(
-          () => target
-        );
+        return Promise.resolve(target.preBuild ? target.preBuild() : null).then(() => target);
       })
       .then((target) => {
         const replace = Utils.replace;
@@ -178,11 +159,7 @@ export default {
         const shCmdArg = isWin ? '/C' : '-c';
 
         // Store this as we need to re-set it after postBuild
-        buildTitle = [
-          target.sh ? `${shCmd} ${shCmdArg} ${exec}` : exec,
-          ...args,
-          '\n'
-        ].join(' ');
+        buildTitle = [target.sh ? `${shCmd} ${shCmdArg} ${exec}` : exec, ...args, '\n'].join(' ');
 
         this.buildView.setHeading(buildTitle);
         if (target.sh) {
@@ -207,32 +184,18 @@ export default {
         this.child.stderr.on('data', (d) => (stderr += d));
         this.child.stdout.pipe(this.buildView.terminal);
         this.child.stderr.pipe(this.buildView.terminal);
-        this.child.killSignals = (
-          target.killSignals || ['SIGINT', 'SIGTERM', 'SIGKILL']
-        ).slice();
+        this.child.killSignals = (target.killSignals || ['SIGINT', 'SIGTERM', 'SIGKILL']).slice();
 
         this.child.on('error', (err) => {
-          this.buildView.terminal.write(
-            (target.sh
-              ? 'Unable to execute with shell: '
-              : 'Unable to execute: ') +
-              exec +
-              '\n'
-          );
+          this.buildView.terminal.write((target.sh ? 'Unable to execute with shell: ' : 'Unable to execute: ') + exec + '\n');
 
           if (/\s/.test(exec) && !target.sh) {
-            this.buildView.terminal.write(
-              '`cmd` cannot contain space. Use `args` for arguments.\n'
-            );
+            this.buildView.terminal.write('`cmd` cannot contain space. Use `args` for arguments.\n');
           }
 
           if ('ENOENT' === err.code) {
-            this.buildView.terminal.write(
-              `Make sure cmd:'${exec}' and cwd:'${cwd}' exists and have correct access permissions.\n`
-            );
-            this.buildView.terminal.write(
-              `Binaries are found in these folders: ${process.env.PATH}\n`
-            );
+            this.buildView.terminal.write(`Make sure cmd:'${exec}' and cwd:'${cwd}' exists and have correct access permissions.\n`);
+            this.buildView.terminal.write(`Binaries are found in these folders: ${process.env.PATH}\n`);
           }
         });
 
@@ -242,30 +205,20 @@ export default {
 
           let success = 0 === exitCode;
           if (atom.config.get('buildium.matchedErrorFailsBuild')) {
-            success =
-              success &&
-              !this.errorMatcher
-                .getMatches()
-                .some(
-                  (match) => match.type && match.type.toLowerCase() === 'error'
-                );
+            success = success && !this.errorMatcher.getMatches().some((match) => match.type && match.type.toLowerCase() === 'error');
           }
 
-          this.linter &&
-            this.linter.processMessages(this.errorMatcher.getMatches(), cwd);
+          this.linter && this.linter.processMessages(this.errorMatcher.getMatches(), cwd);
 
           if (atom.config.get('buildium.beepWhenDone')) {
             atom.beep();
           }
 
           this.buildView.setHeading('Running postBuild...');
-          return Promise.resolve(
-            target.postBuild ? target.postBuild(success, stdout, stderr) : null
-          ).then(() => {
+          return Promise.resolve(target.postBuild ? target.postBuild(success, stdout, stderr) : null).then(() => {
             this.buildView.setHeading(buildTitle);
 
-            this.busyProvider &&
-              this.busyProvider.remove(`Build: ${target.name}`, success);
+            this.busyProvider && this.busyProvider.remove(`Build: ${target.name}`, success);
             this.buildView.buildFinished(success);
             this.statusBarView && this.statusBarView.setBuildSuccess(success);
             if (success) {
@@ -329,11 +282,7 @@ export default {
     clearTimeout(this.finishedTimer);
 
     this.doSaveConfirm(this.unsavedTextEditors(), () => {
-      const nextBuild = this.startNewBuild.bind(
-        this,
-        source,
-        event ? event.type : null
-      );
+      const nextBuild = this.startNewBuild.bind(this, source, event ? event.type : null);
       if (this.child) {
         this.nextBuild = nextBuild;
         return this.abort();
@@ -348,10 +297,7 @@ export default {
       continuecb();
     };
 
-    if (
-      0 === modifiedTextEditors.length ||
-      atom.config.get('buildium.saveOnBuild')
-    ) {
+    if (0 === modifiedTextEditors.length || atom.config.get('buildium.saveOnBuild')) {
       saveAndContinue(true);
       return;
     }
@@ -384,29 +330,26 @@ export default {
   },
 
   disableBuild() {
-    const notification = atom.notifications.addWarning(
-      "In order to avoid conflicts, it's recommended to disable (or remove) the original `build` package",
-      {
-        dismissable: true,
-        buttons: [
-          {
-            text: 'Disable Package',
-            className: 'icon icon-playback-pause',
-            onDidClick() {
-              atom.packages.disablePackage('build');
-              return notification.dismiss();
-            }
-          },
-          {
-            text: "Don't Ask Again",
-            onDidClick() {
-              atom.config.set('buildium.muteConflictWarning', true);
-              return notification.dismiss();
-            }
+    const notification = atom.notifications.addWarning("In order to avoid conflicts, it's recommended to disable (or remove) the original `build` package", {
+      dismissable: true,
+      buttons: [
+        {
+          text: 'Disable Package',
+          className: 'icon icon-playback-pause',
+          onDidClick() {
+            atom.packages.disablePackage('build');
+            return notification.dismiss();
           }
-        ]
-      }
-    );
+        },
+        {
+          text: "Don't Ask Again",
+          onDidClick() {
+            atom.config.set('buildium.muteConflictWarning', true);
+            return notification.dismiss();
+          }
+        }
+      ]
+    });
   },
 
   consumeLinterRegistry(registry) {
@@ -419,11 +362,7 @@ export default {
     else this.tools.push(builder);
     this.targetManager.setTools(this.tools);
     return new Disposable(() => {
-      this.tools = this.tools.filter(
-        Array.isArray(builder)
-          ? (tool) => builder.indexOf(tool) === -1
-          : (tool) => tool !== builder
-      );
+      this.tools = this.tools.filter(Array.isArray(builder) ? (tool) => builder.indexOf(tool) === -1 : (tool) => tool !== builder);
       this.targetManager.setTools(this.tools);
     });
   },

@@ -86,7 +86,7 @@ export default class BuildView extends View {
     });
     atom.config.observe('editor.fontSize', ::this.fontSizeFromConfig);
     atom.config.observe('editor.fontFamily', ::this.fontFamilyFromConfig);
-    atom.commands.add('atom-workspace', 'build:toggle-panel', ::this.toggle);
+    atom.commands.add('atom-workspace', 'buildium:toggle-panel', ::this.toggle);
   }
 
   destroy() {
@@ -302,7 +302,7 @@ export default class BuildView extends View {
   }
 
   build() {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'build:trigger');
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'buildium:trigger');
   }
 
   setHeading(heading) {

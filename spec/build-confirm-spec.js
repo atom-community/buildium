@@ -17,7 +17,7 @@ describe('Confirm', () => {
     const createdHomeDir = temp.mkdirSync('atom-build-spec-home');
     os.homedir = () => createdHomeDir;
     directory = fs.realpathSync(temp.mkdirSync({ prefix: 'atom-build-spec-' })) + '/';
-    atom.project.setPaths([ directory ]);
+    atom.project.setPaths([directory]);
 
     atom.config.set('buildium.buildOnSave', false);
     atom.config.set('buildium.panelVisibility', 'Toggle');
@@ -40,16 +40,23 @@ describe('Confirm', () => {
 
   afterEach(() => {
     os.homedir = originalHomedirFn;
-    try { fs.removeSync(directory); } catch (e) { console.warn('Failed to clean up: ', e); }
+    try {
+      fs.removeSync(directory);
+    } catch (e) {
+      console.warn('Failed to clean up: ', e);
+    }
   });
 
   describe('when the text editor is modified', () => {
     it('should show the save confirmation', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+        })
+      );
 
       waitsForPromise(() => {
         return atom.workspace.open('.atom-build.json');
@@ -58,7 +65,7 @@ describe('Confirm', () => {
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
         editor.insertText('hello kansas');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
@@ -73,9 +80,12 @@ describe('Confirm', () => {
     it('should cancel the confirm window when pressing escape', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+        })
+      );
 
       waitsForPromise(() => {
         return atom.workspace.open('.atom-build.json');
@@ -84,52 +94,53 @@ describe('Confirm', () => {
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
         editor.insertText('hello kansas');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => workspaceElement.querySelector('.build-confirm'));
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:no-confirm');
+        atom.commands.dispatch(workspaceElement, 'buildium:no-confirm');
         expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
       });
     });
 
     it('should not do anything if issuing no-confirm whithout the dialog', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
-      atom.commands.dispatch(workspaceElement, 'build:no-confirm');
+      atom.commands.dispatch(workspaceElement, 'buildium:no-confirm');
     });
 
     it('should not confirm if a TextEditor edits an unsaved file', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+        })
+      );
 
       waitsForPromise(() => {
-        return Promise.all([
-          atom.workspace.open('.atom-build.json'),
-          atom.workspace.open()
-        ]);
+        return Promise.all([atom.workspace.open('.atom-build.json'), atom.workspace.open()]);
       });
 
       runs(() => {
-        const editor = atom.workspace.getTextEditors().find(textEditor => {
-          return ('untitled' === textEditor.getTitle());
+        const editor = atom.workspace.getTextEditors().find((textEditor) => {
+          return 'untitled' === textEditor.getTitle();
         });
         editor.insertText('Just some temporary place to write stuff');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
         expect(workspaceElement.querySelector('.build')).toExist();
-        expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/Surprising is the passing of time but not so, as the time of passing/);
+        expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(
+          /Surprising is the passing of time but not so, as the time of passing/
+        );
       });
     });
 
@@ -137,24 +148,26 @@ describe('Confirm', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
       fs.writeFileSync(directory + 'catme', 'Surprising is the passing of time but not so, as the time of passing.');
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: `${cat} catme`
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: `${cat} catme`
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open('catme'));
 
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
         editor.setText('kansas');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => workspaceElement.querySelector('.build-confirm'));
       runs(() => document.activeElement.click());
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -169,16 +182,19 @@ describe('Confirm', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
       fs.writeFileSync(directory + 'catme', 'Surprising is the passing of time but not so, as the time of passing.');
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: `${cat} catme`
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: `${cat} catme`
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open('catme'));
 
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
         editor.setText('catme');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => workspaceElement.querySelector('.build-confirm'));
@@ -188,8 +204,7 @@ describe('Confirm', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -204,16 +219,19 @@ describe('Confirm', () => {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
       fs.writeFileSync(directory + 'catme', 'Surprising is the passing of time but not so, as the time of passing.');
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: `${cat} catme`
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: `${cat} catme`
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open('catme'));
 
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
         editor.setText('kansas');
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => workspaceElement.querySelector('.build-confirm'));
@@ -236,18 +254,23 @@ describe('Confirm', () => {
     it('should only keep at maximum 1 dialog open', function () {
       expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
 
-      fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-        cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-      }));
+      fs.writeFileSync(
+        directory + '.atom-build.json',
+        JSON.stringify({
+          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+        })
+      );
 
       waitsForPromise(() => atom.workspace.open('.atom-build.json'));
 
       runs(() => {
         const editor = atom.workspace.getActiveTextEditor();
-        editor.setText(JSON.stringify({
-          cmd: 'echo kansas'
-        }));
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        editor.setText(
+          JSON.stringify({
+            cmd: 'echo kansas'
+          })
+        );
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
@@ -255,7 +278,7 @@ describe('Confirm', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waits(waitTime); // Everything is the same so we can't know when second build:trigger has been handled

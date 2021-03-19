@@ -19,14 +19,14 @@ class Builder {
       {
         exec: 'exit',
         args: ['0'],
-        atomCommandName: 'build:hook-test:succeeding',
+        atomCommandName: 'buildium:hook-test:succeeding',
         preBuild: () => hooks.preBuild(),
         postBuild: (success) => hooks.postBuild(success)
       },
       {
         exec: 'exit',
         args: ['1'],
-        atomCommandName: 'build:hook-test:failing',
+        atomCommandName: 'buildium:hook-test:failing',
         preBuild: () => hooks.preBuild(),
         postBuild: (success) => hooks.postBuild(success)
       }

@@ -7,8 +7,8 @@ import specHelpers from 'atom-build-spec-helpers';
 describe('Hooks', () => {
   let directory = null;
   let workspaceElement = null;
-  const succeedingCommandName = 'build:hook-test:succeeding';
-  const failingCommandName = 'build:hook-test:failing';
+  const succeedingCommandName = 'buildium:hook-test:succeeding';
+  const failingCommandName = 'buildium:hook-test:failing';
   const dummyPackageName = 'atom-build-hooks-dummy-package';
   const dummyPackagePath = __dirname + '/fixture/' + dummyPackageName;
 
@@ -16,7 +16,7 @@ describe('Hooks', () => {
 
   beforeEach(() => {
     directory = fs.realpathSync(temp.mkdirSync({ prefix: 'atom-build-spec-' }));
-    atom.project.setPaths([ directory ]);
+    atom.project.setPaths([directory]);
 
     atom.config.set('buildium.buildOnSave', false);
     atom.config.set('buildium.panelVisibility', 'Toggle');
@@ -41,7 +41,11 @@ describe('Hooks', () => {
   });
 
   afterEach(() => {
-    try { fs.removeSync(directory); } catch (e) { console.warn('Failed to clean up: ', e); }
+    try {
+      fs.removeSync(directory);
+    } catch (e) {
+      console.warn('Failed to clean up: ', e);
+    }
   });
 
   it('should call preBuild', () => {
@@ -75,8 +79,7 @@ describe('Hooks', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -95,8 +98,7 @@ describe('Hooks', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('error');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('error');
       });
 
       runs(() => {

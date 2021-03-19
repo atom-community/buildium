@@ -33,23 +33,32 @@ describe('Visible', () => {
     });
 
     waitsForPromise(() => {
-      return specHelpers.vouch(temp.mkdir, { prefix: 'atom-build-spec-' }).then( (dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then( (dir) => {
-        directory = dir + '/';
-        atom.project.setPaths([ directory ]);
-        return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
-      }).then( (dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then( (dir) => {
-        os.homedir = () => dir;
-      });
+      return specHelpers
+        .vouch(temp.mkdir, { prefix: 'atom-build-spec-' })
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          directory = dir + '/';
+          atom.project.setPaths([directory]);
+          return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
+        })
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          os.homedir = () => dir;
+        });
     });
   });
 
   afterEach(() => {
     os.homedir = originalHomedirFn;
-    try { fs.removeSync(directory); } catch (e) { console.warn('Failed to clean up: ', e); }
+    try {
+      fs.removeSync(directory);
+    } catch (e) {
+      console.warn('Failed to clean up: ', e);
+    }
   });
 
   describe('when package is activated with panel visibility set to Keep Visible', () => {
@@ -75,13 +84,13 @@ describe('Visible', () => {
 
     describe('when build panel is toggled and it is visible', () => {
       beforeEach(() => {
-        atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
+        atom.commands.dispatch(workspaceElement, 'buildium:toggle-panel');
       });
 
       it('should hide the build panel', () => {
         expect(workspaceElement.querySelector('.build')).toExist();
 
-        atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
+        atom.commands.dispatch(workspaceElement, 'buildium:toggle-panel');
 
         expect(workspaceElement.querySelector('.build')).not.toExist();
       });
@@ -91,11 +100,14 @@ describe('Visible', () => {
       it('should only show the build panel if a build fails', () => {
         atom.config.set('buildium.panelVisibility', 'Show on Error');
 
-        fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-        }));
+        fs.writeFileSync(
+          directory + '.atom-build.json',
+          JSON.stringify({
+            cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+          })
+        );
 
-        runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+        runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
         /* Give it some reasonable time to show itself if there is a bug */
         waits(waitTime);
@@ -105,21 +117,23 @@ describe('Visible', () => {
         });
 
         runs(() => {
-          fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-            cmd: 'echo Very bad... && exit 1'
-          }));
+          fs.writeFileSync(
+            directory + '.atom-build.json',
+            JSON.stringify({
+              cmd: 'echo Very bad... && exit 1'
+            })
+          );
         });
 
         // .atom-build.json is updated asynchronously... give it some time
         waitsForPromise(() => specHelpers.refreshAwaitTargets());
 
         runs(() => {
-          atom.commands.dispatch(workspaceElement, 'build:trigger');
+          atom.commands.dispatch(workspaceElement, 'buildium:trigger');
         });
 
         waitsFor(() => {
-          return workspaceElement.querySelector('.build .title') &&
-            workspaceElement.querySelector('.build .title').classList.contains('error');
+          return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('error');
         });
 
         waits(waitTime);
@@ -134,11 +148,14 @@ describe('Visible', () => {
       it('should not show the build panel if build succeeeds', () => {
         atom.config.set('buildium.panelVisibility', 'Hidden');
 
-        fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-        }));
+        fs.writeFileSync(
+          directory + '.atom-build.json',
+          JSON.stringify({
+            cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+          })
+        );
 
-        runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+        runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
         /* Give it some reasonable time to show itself if there is a bug */
         waits(waitTime);
@@ -151,11 +168,14 @@ describe('Visible', () => {
       it('should not show the build panel if build fails', () => {
         atom.config.set('buildium.panelVisibility', 'Hidden');
 
-        fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-          cmd: 'echo "Very bad..." && exit 2'
-        }));
+        fs.writeFileSync(
+          directory + '.atom-build.json',
+          JSON.stringify({
+            cmd: 'echo "Very bad..." && exit 2'
+          })
+        );
 
-        runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+        runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
         /* Give it some reasonable time to show itself if there is a bug */
         waits(waitTime);
@@ -168,25 +188,29 @@ describe('Visible', () => {
       it('should show the build panel if it is toggled', () => {
         atom.config.set('buildium.panelVisibility', 'Hidden');
 
-        fs.writeFileSync(directory + '.atom-build.json', JSON.stringify({
-          cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
-        }));
+        fs.writeFileSync(
+          directory + '.atom-build.json',
+          JSON.stringify({
+            cmd: 'echo Surprising is the passing of time but not so, as the time of passing.'
+          })
+        );
 
-        runs(() => atom.commands.dispatch(workspaceElement, 'build:trigger'));
+        runs(() => atom.commands.dispatch(workspaceElement, 'buildium:trigger'));
 
         waits(waitTime); // Let build finish. Since UI component is not visible yet, there's nothing to poll.
 
         runs(() => {
-          atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
+          atom.commands.dispatch(workspaceElement, 'buildium:toggle-panel');
         });
 
         waitsFor(() => {
-          return workspaceElement.querySelector('.build .title') &&
-            workspaceElement.querySelector('.build .title').classList.contains('success');
+          return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
         });
 
         runs(() => {
-          expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/Surprising is the passing of time but not so, as the time of passing/);
+          expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(
+            /Surprising is the passing of time but not so, as the time of passing/
+          );
         });
       });
     });

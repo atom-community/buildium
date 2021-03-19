@@ -28,30 +28,39 @@ describe('Target', () => {
     jasmine.attachToDOM(workspaceElement);
 
     waitsForPromise(() => {
-      return specHelpers.vouch(temp.mkdir, { prefix: 'atom-build-spec-' }).then((dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then((dir) => {
-        directory = dir + '/';
-        atom.project.setPaths([ directory ]);
-        return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
-      }).then( (dir) => {
-        return specHelpers.vouch(fs.realpath, dir);
-      }).then( (dir) => {
-        os.homedir = () => dir;
-        return atom.packages.activatePackage('build');
-      });
+      return specHelpers
+        .vouch(temp.mkdir, { prefix: 'atom-build-spec-' })
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          directory = dir + '/';
+          atom.project.setPaths([directory]);
+          return specHelpers.vouch(temp.mkdir, 'atom-build-spec-home');
+        })
+        .then((dir) => {
+          return specHelpers.vouch(fs.realpath, dir);
+        })
+        .then((dir) => {
+          os.homedir = () => dir;
+          return atom.packages.activatePackage('build');
+        });
     });
   });
 
   afterEach(() => {
     os.homedir = originalHomedirFn;
-    try { fs.removeSync(directory); } catch (e) { console.warn('Failed to clean up: ', e); }
+    try {
+      fs.removeSync(directory);
+    } catch (e) {
+      console.warn('Failed to clean up: ', e);
+    }
   });
 
   describe('when no targets exists', () => {
     it('should show a notification', () => {
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:select-active-target');
+        atom.commands.dispatch(workspaceElement, 'buildium:select-active-target');
       });
 
       waitsFor(() => {
@@ -59,7 +68,7 @@ describe('Target', () => {
       });
 
       runs(() => {
-        const targets = [ ...workspaceElement.querySelectorAll('.select-list li.build-target') ].map(el => el.textContent);
+        const targets = [...workspaceElement.querySelectorAll('.select-list li.build-target')].map((el) => el.textContent);
         expect(targets).toEqual([]);
       });
     });
@@ -73,7 +82,7 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:select-active-target');
+        atom.commands.dispatch(workspaceElement, 'buildium:select-active-target');
       });
 
       waitsFor(() => {
@@ -81,8 +90,8 @@ describe('Target', () => {
       });
 
       runs(() => {
-        const targets = [ ...workspaceElement.querySelectorAll('.select-list li.build-target') ].map(el => el.textContent);
-        expect(targets).toEqual([ 'Custom: The default build', 'Custom: Some customized build' ]);
+        const targets = [...workspaceElement.querySelectorAll('.select-list li.build-target')].map((el) => el.textContent);
+        expect(targets).toEqual(['Custom: The default build', 'Custom: Some customized build']);
       });
     });
 
@@ -93,7 +102,7 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:select-active-target');
+        atom.commands.dispatch(workspaceElement, 'buildium:select-active-target');
       });
 
       waitsFor(() => {
@@ -114,7 +123,7 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:select-active-target');
+        atom.commands.dispatch(workspaceElement, 'buildium:select-active-target');
       });
 
       waitsFor(() => {
@@ -126,8 +135,7 @@ describe('Target', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -142,12 +150,11 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -162,7 +169,7 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:select-active-target');
+        atom.commands.dispatch(workspaceElement, 'buildium:select-active-target');
       });
 
       waitsFor(() => {
@@ -182,13 +189,12 @@ describe('Target', () => {
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
         expect(workspaceElement.querySelector('.terminal').terminal.getContent()).toMatch(/customized/);
-        atom.commands.dispatch(workspaceElement.querySelector('.build'), 'build:stop');
+        atom.commands.dispatch(workspaceElement.querySelector('.build'), 'buildium:stop');
       });
 
       waitsFor(() => {
@@ -196,12 +202,11 @@ describe('Target', () => {
       });
 
       runs(() => {
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+        atom.commands.dispatch(workspaceElement, 'buildium:trigger');
       });
 
       waitsFor(() => {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
+        return workspaceElement.querySelector('.build .title') && workspaceElement.querySelector('.build .title').classList.contains('success');
       });
 
       runs(() => {
@@ -212,10 +217,10 @@ describe('Target', () => {
     it('should show a warning if current file is not part of an open Atom project', () => {
       waitsForPromise(() => atom.workspace.open(path.join('..', 'randomFile')));
       waitsForPromise(() => specHelpers.refreshAwaitTargets());
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:select-active-target'));
-      waitsFor(() => atom.notifications.getNotifications().find(n => n.message === 'Unable to build.'));
+      runs(() => atom.commands.dispatch(workspaceElement, 'buildium:select-active-target'));
+      waitsFor(() => atom.notifications.getNotifications().find((n) => n.message === 'Unable to build.'));
       runs(() => {
-        const not = atom.notifications.getNotifications().find(n => n.message === 'Unable to build.');
+        const not = atom.notifications.getNotifications().find((n) => n.message === 'Unable to build.');
         expect(not.type).toBe('warning');
       });
     });
