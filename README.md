@@ -59,4 +59,4 @@ Please refer to the original [README](https://github.com/noseglid/atom-build#rea
 
 ## License
 
-This work is dual-licensed under [The MIT License](https://opensource.org/licenses/MIT)
+This work is licensed under [The MIT License](https://opensource.org/licenses/MIT)
