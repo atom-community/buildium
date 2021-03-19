@@ -10,6 +10,7 @@
     "productivity"
   ],
   "repository": "https://github.com/idleberg/atom-buildium",
+  "license": "MIT",
   "main": "./lib/build",
   "scripts": {
     "build": "npm run clean && rollup --config",
