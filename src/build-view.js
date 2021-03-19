@@ -7,45 +7,36 @@ export default class BuildView extends View {
   }
 
   static initialHeadingText() {
-    return 'Atom Build';
+    return 'Buildium';
   }
 
   static content() {
-    this.div(
-      { tabIndex: -1, class: 'build tool-panel native-key-bindings' },
-      () => {
-        this.div({ class: 'heading', outlet: 'panelHeading' }, () => {
-          this.div({ class: 'control-container opaque-hover' }, () => {
-            this.button({
-              class: 'btn btn-default icon icon-zap',
-              click: 'build',
-              title: 'Build current project'
-            });
-            this.button({
-              class: 'btn btn-default icon icon-trashcan',
-              click: 'clearOutput'
-            });
-            this.button({
-              class: 'btn btn-default icon icon-x',
-              click: 'close'
-            });
-            this.div({ class: 'title', outlet: 'title' }, () => {
-              this.span(
-                { class: 'build-timer', outlet: 'buildTimer' },
-                this.initialTimerText()
-              );
-            });
+    this.div({ tabIndex: -1, class: 'build tool-panel native-key-bindings' }, () => {
+      this.div({ class: 'heading', outlet: 'panelHeading' }, () => {
+        this.div({ class: 'control-container opaque-hover' }, () => {
+          this.button({
+            class: 'btn btn-default icon icon-zap',
+            click: 'build',
+            title: 'Build current project'
           });
-          this.div(
-            { class: 'icon heading-text', outlet: 'heading' },
-            this.initialHeadingText()
-          );
+          this.button({
+            class: 'btn btn-default icon icon-trashcan',
+            click: 'clearOutput'
+          });
+          this.button({
+            class: 'btn btn-default icon icon-x',
+            click: 'close'
+          });
+          this.div({ class: 'title', outlet: 'title' }, () => {
+            this.span({ class: 'build-timer', outlet: 'buildTimer' }, this.initialTimerText());
+          });
         });
+        this.div({ class: 'icon heading-text', outlet: 'heading' }, this.initialHeadingText());
+      });
 
-        this.div({ class: 'output panel-body', outlet: 'output' });
-        this.div({ class: 'resizer', outlet: 'resizer' });
-      }
-    );
+      this.div({ class: 'output panel-body', outlet: 'output' });
+      this.div({ class: 'resizer', outlet: 'resizer' });
+    });
   }
 
   constructor(...args) {
@@ -85,10 +76,7 @@ export default class BuildView extends View {
     this.resizeEnded = ::this.resizeEnded;
 
     atom.config.observe('buildium.panelVisibility', ::this.visibleFromConfig);
-    atom.config.observe(
-      'buildium.panelOrientation',
-      ::this.orientationFromConfig
-    );
+    atom.config.observe('buildium.panelOrientation', ::this.orientationFromConfig);
     atom.config.observe('buildium.hidePanelHeading', (hide) => {
       (hide && this.panelHeading.hide()) || this.panelHeading.show();
     });
@@ -120,14 +108,9 @@ export default class BuildView extends View {
         const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
         if (Math.abs(delta) < (h * 5) / 6) return;
 
-        const nearestRowHeight =
-          Math.round((this.terminalEl.height() + delta) / h) * h;
-        const maxHeight =
-          $('.item-views').height() + $('.build .output').height();
-        this.terminalEl.css(
-          'height',
-          `${Math.min(maxHeight, nearestRowHeight)}px`
-        );
+        const nearestRowHeight = Math.round((this.terminalEl.height() + delta) / h) * h;
+        const maxHeight = $('.item-views').height() + $('.build .output').height();
+        this.terminalEl.css('height', `${Math.min(maxHeight, nearestRowHeight)}px`);
         break;
       }
 
@@ -135,23 +118,15 @@ export default class BuildView extends View {
         const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
         if (Math.abs(delta) < (h * 5) / 6) return;
 
-        const nearestRowHeight =
-          Math.round((this.terminalEl.height() - delta) / h) * h;
-        const maxHeight =
-          $('.item-views').height() + $('.build .output').height();
-        this.terminalEl.css(
-          'height',
-          `${Math.min(maxHeight, nearestRowHeight)}px`
-        );
+        const nearestRowHeight = Math.round((this.terminalEl.height() - delta) / h) * h;
+        const maxHeight = $('.item-views').height() + $('.build .output').height();
+        this.terminalEl.css('height', `${Math.min(maxHeight, nearestRowHeight)}px`);
         break;
       }
 
       case 'Left': {
         const delta = this.resizer.get(0).getBoundingClientRect().right - ev.x;
-        this.css(
-          'width',
-          `${this.width() - delta - this.resizer.outerWidth()}px`
-        );
+        this.css('width', `${this.width() - delta - this.resizer.outerWidth()}px`);
         break;
       }
 
@@ -172,20 +147,14 @@ export default class BuildView extends View {
   }
 
   resizeToNearestRow() {
-    if (
-      -1 !==
-      ['Top', 'Bottom'].indexOf(atom.config.get('buildium.panelOrientation'))
-    ) {
+    if (-1 !== ['Top', 'Bottom'].indexOf(atom.config.get('buildium.panelOrientation'))) {
       this.fixTerminalElHeight();
     }
     this.resizeTerminal();
   }
 
   getFontGeometry() {
-    const o = $('<div>A</div>')
-      .addClass('terminal')
-      .addClass('terminal-test')
-      .appendTo(this.output);
+    const o = $('<div>A</div>').addClass('terminal').addClass('terminal-test').appendTo(this.output);
     const w = o[0].getBoundingClientRect().width;
     const h = o[0].getBoundingClientRect().height;
     o.remove();
@@ -228,8 +197,7 @@ export default class BuildView extends View {
       Left: atom.workspace.addLeftPanel,
       Right: atom.workspace.addRightPanel
     };
-    const orientation =
-      atom.config.get('buildium.panelOrientation') || 'Bottom';
+    const orientation = atom.config.get('buildium.panelOrientation') || 'Bottom';
     this.panel = addfn[orientation].call(atom.workspace, { item: this });
     this.fixTerminalElHeight();
     this.resizeToNearestRow();
@@ -242,16 +210,10 @@ export default class BuildView extends View {
 
   detach(force) {
     force = force || false;
-    if (
-      atom.views.getView(atom.workspace) &&
-      document.activeElement === this[0]
-    ) {
+    if (atom.views.getView(atom.workspace) && document.activeElement === this[0]) {
       atom.views.getView(atom.workspace).focus();
     }
-    if (
-      this.panel &&
-      (force || 'Keep Visible' !== atom.config.get('buildium.panelVisibility'))
-    ) {
+    if (this.panel && (force || 'Keep Visible' !== atom.config.get('buildium.panelVisibility'))) {
       this.panel.destroy();
       this.panel = null;
     }
@@ -323,9 +285,7 @@ export default class BuildView extends View {
   }
 
   updateTitle() {
-    this.buildTimer.text(
-      ((new Date() - this.starttime) / 1000).toFixed(1) + ' s'
-    );
+    this.buildTimer.text(((new Date() - this.starttime) / 1000).toFixed(1) + ' s');
     this.titleTimer = setTimeout(this.updateTitle.bind(this), 100);
   }
 
@@ -361,9 +321,7 @@ export default class BuildView extends View {
 
   buildFinished(success) {
     if (!success && !this.isAttached()) {
-      this.attach(
-        atom.config.get('buildium.panelVisibility') === 'Show on Error'
-      );
+      this.attach(atom.config.get('buildium.panelVisibility') === 'Show on Error');
     }
     this.finalizeBuild(success);
   }
