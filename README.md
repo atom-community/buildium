@@ -14,7 +14,7 @@ This package is a fork of `build`, with a few key-differences:
 - support for JSON build-files with comments
 - updated dependencies
 
-**Note:** Support for JavaScript build-files has been disabled, but will hopefully come back in a future iteration
+**Note:** Support for JavaScript build-files has been removed, but will hopefully come back in a future iteration
 
 ## Installation
 
