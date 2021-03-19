@@ -1,30 +1,36 @@
 {
-  "menu": [ {
-    "label": "Packages",
-    "submenu": [ {
-        "label": "Build",
-        "submenu": [ {
-          "label": "Build project",
-          "command": "build:trigger"
-        },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
         {
-          "label": "Terminate build",
-          "command": "build:stop"
-        },
-        {
-          "label": "Select active target",
-          "command": "build:select-active-target"
-        },
-        {
-          "label": "Refresh targets",
-          "command": "build:refresh-targets"
-        },
-        {
-          "label": "Toggle panel",
-          "command": "build:toggle-panel"
-        } ]
-      } ]
-  } ],
+          "label": "Buildium",
+          "submenu": [
+            {
+              "label": "Build project",
+              "command": "buildium:trigger"
+            },
+            {
+              "label": "Terminate build",
+              "command": "buildium:stop"
+            },
+            {
+              "label": "Select active target",
+              "command": "buildium:select-active-target"
+            },
+            {
+              "label": "Refresh targets",
+              "command": "buildium:refresh-targets"
+            },
+            {
+              "label": "Toggle panel",
+              "command": "buildium:toggle-panel"
+            }
+          ]
+        }
+      ]
+    }
+  ],
 
   "context-menu": {}
 }
