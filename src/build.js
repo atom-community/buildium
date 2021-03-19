@@ -58,7 +58,7 @@ export default {
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
     atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
 
-    if (!atom.config.get('buildium.muteConflictWarning') && !atom.packages.isPackageDisabled('build')) {
+    if (!atom.config.get('buildium.muteConflictWarning') && atom.packages.isPackageActive('build')) {
       this.disableBuild();
     }
   },
