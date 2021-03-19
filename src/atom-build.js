@@ -3,23 +3,24 @@ import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import JSON from 'json5';
 import CSON from 'cson-parser';
 import YAML from 'js-yaml';
 
 function getConfig(file) {
   const realFile = fs.realpathSync(file);
-  delete require.cache[realFile];
+
   switch (path.extname(file)) {
     case '.json':
-    case '.js':
-      return fs.readFileSync(realFile);
+    case '.json5':
+      return JSON.parse(fs.readFileSync(realFile).toString());
 
     case '.cson':
-      return CSON.parse(fs.readFileSync(realFile));
+      return CSON.parse(fs.readFileSync(realFile).toString());
 
     case '.yaml':
     case '.yml':
-      return YAML.safeLoad(fs.readFileSync(realFile));
+      return YAML.safeLoad(fs.readFileSync(realFile).toString());
   }
 
   return {};
@@ -71,10 +72,7 @@ export default class CustomFile extends EventEmitter {
     this.files = [].concat
       .apply(
         [],
-        ['json', 'cson', 'yaml', 'yml', 'js'].map((ext) => [
-          path.join(this.cwd, `.atom-build.${ext}`),
-          path.join(os.homedir(), `.atom-build.${ext}`)
-        ])
+        ['json', 'cson', 'yaml', 'yml', 'js'].map((ext) => [path.join(this.cwd, `.atom-build.${ext}`), path.join(os.homedir(), `.atom-build.${ext}`)])
       )
       .filter(fs.existsSync);
     return 0 < this.files.length;
@@ -84,19 +82,13 @@ export default class CustomFile extends EventEmitter {
     this.fileWatchers.forEach((fw) => fw.close());
     // On Linux, closing a watcher triggers a new callback, which causes an infinite loop
     // fallback to `watchFile` here which polls instead.
-    this.fileWatchers = this.files.map((file) =>
-      (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () =>
-        this.emit('refresh')
-      )
-    );
+    this.fileWatchers = this.files.map((file) => (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () => this.emit('refresh')));
 
     const config = [];
-    this.files.map(getConfig).forEach((build) => {
+    this.files.map(getConfig).map((build) => {
       config.push(
         createBuildConfig(build, build.name || 'default'),
-        ...Object.keys(build.targets || {}).map((name) =>
-          createBuildConfig(build.targets[name], name)
-        )
+        ...Object.keys(build.targets || {}).map((name) => createBuildConfig(build.targets[name], name))
       );
     });
 
