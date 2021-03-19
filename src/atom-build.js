@@ -72,7 +72,7 @@ export default class CustomFile extends EventEmitter {
     this.files = [].concat
       .apply(
         [],
-        ['json', 'cson', 'yaml', 'yml', 'js'].map((ext) => [path.join(this.cwd, `.atom-build.${ext}`), path.join(os.homedir(), `.atom-build.${ext}`)])
+        ['json', 'json5', 'cson', 'yaml', 'yml'].map((ext) => [path.join(this.cwd, `.atom-build.${ext}`), path.join(os.homedir(), `.atom-build.${ext}`)])
       )
       .filter(fs.existsSync);
     return 0 < this.files.length;
