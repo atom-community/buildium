@@ -28,16 +28,23 @@ Install `buildium` from Atom's [Package Manager](http://flight-manual.atom.io/us
 
 Change to your Atom packages directory:
 
-```powershell
-# Windows Powershell
-cd $Env:USERPROFILE\.atom\packages
+hange to your Atom packages directory:
 
-# Windows Command Prompt
+**Windows**
+
+```powershell
+# Powershell
+$ cd $Env:USERPROFILE\.atom\packages
+```
+
+```cmd
+:: Command Prompt
 $ cd %USERPROFILE%\.atom\packages
 ```
 
+**Linux & macOS**
+
 ```bash
-# Linux & macOS
 $ cd ~/.atom/packages/
 ```
 
