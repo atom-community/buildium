@@ -1,11 +1,10 @@
 {
-  "extends": "atom-build",
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "sourceType": "module"
   },
   "rules": {
-    "new-cap": [ 2, { "capIsNewExceptions": [ "XRegExp" ] } ],
+    "new-cap": [2, { "capIsNewExceptions": ["XRegExp"] }],
     "no-loop-func": 0
   }
 }
