@@ -24,7 +24,7 @@ export default {
       // accidentially override any other node installation
 
       // Note: This should probably be removed in a end-user friendly way...
-      process.env.PATH += ':/usr/local/bin';
+      process.env.PATH = (process.env.PATH ? process.env.PATH + ':' : '') + '/usr/local/bin';
     }
 
     atomPackageDeps.install('build');
