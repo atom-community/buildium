@@ -15,8 +15,6 @@ This package is a fork of `build`, with a few key-differences:
 - support for TOML build-files
 - updated dependencies
 
-**Note:** Support for JavaScript build-files has been removed, but will hopefully come back in a future iteration
-
 ## Installation
 
 ### apm
