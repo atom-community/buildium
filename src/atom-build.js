@@ -6,10 +6,11 @@ import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
 import loaders from './loaders';
 
 const explorer = cosmiconfig('buildium', {
-  searchPlaces: ['.atom-build.json', '.atom-build.js', '.atom-build.cjs', '.atom-build.yml', '.atom-build.yaml', '.atom-build.toml'],
+  searchPlaces: ['.atom-build.cjs', '.atom-build.js', '.atom-build.json', '.atom-build.json5', '.atom-build.toml', '.atom-build.yaml', '.atom-build.yml'],
   loaders: {
     '.cson': loaders.cson,
     '.toml': loaders.toml,
+    '.json': loaders.json5,
     '.json5': loaders.json5,
     'noExt': defaultLoaders['.json']
   }
