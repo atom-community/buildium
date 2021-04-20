@@ -30,13 +30,10 @@ const activePath = () => {
   return atom.project
     .getPaths()
     .sort((a, b) => b.length - a.length)
-    .find((p) => {
+    .find(async (p) => {
       try {
-        const realpath = fs.realpathSync(p);
-        return (
-          fs.realpathSync(textEditor.getPath()).substr(0, realpath.length) ===
-          realpath
-        );
+        const realpath = await fs.promises.realpath(p);
+        return (await fs.promises.realpath(textEditor.getPath()).substr(0, realpath.length)) === realpath;
       } catch (err) {
         /* Path no longer available. Possible network volume has gone down */
         return false;
@@ -66,9 +63,9 @@ const replace = (value = '', targetEnv) => {
 
   const editor = atom.workspace.getActiveTextEditor();
 
-  const projectPaths = atom.project.getPaths().map((projectPath) => {
+  const projectPaths = atom.project.getPaths().map(async (projectPath) => {
     try {
-      return fs.realpathSync(projectPath);
+      return await fs.promises.realpathSync(projectPath);
     } catch (e) {
       /* Do nothing. */
     }
@@ -79,33 +76,19 @@ const replace = (value = '', targetEnv) => {
   if (editor && undefined !== editor.getPath()) {
     const activeFile = fs.realpathSync(editor.getPath());
     const activeFilePath = path.dirname(activeFile);
-    projectPath = projectPaths.find(
-      (p) => activeFilePath && activeFilePath.startsWith(p)
-    );
+    projectPath = projectPaths.find((p) => activeFilePath && activeFilePath.startsWith(p));
     value = value.replace(/{FILE_ACTIVE}/g, activeFile);
     value = value.replace(/{FILE_ACTIVE_PATH}/g, activeFilePath);
     value = value.replace(/{FILE_ACTIVE_NAME}/g, path.basename(activeFile));
-    value = value.replace(
-      /{FILE_ACTIVE_NAME_BASE}/g,
-      path.basename(activeFile, path.extname(activeFile))
-    );
+    value = value.replace(/{FILE_ACTIVE_NAME_BASE}/g, path.basename(activeFile, path.extname(activeFile)));
     value = value.replace(/{SELECTION}/g, editor.getSelectedText());
     const cursorScreenPosition = editor.getCursorScreenPosition();
-    value = value.replace(
-      /{FILE_ACTIVE_CURSOR_ROW}/g,
-      cursorScreenPosition.row + 1
-    );
-    value = value.replace(
-      /{FILE_ACTIVE_CURSOR_COLUMN}/g,
-      cursorScreenPosition.column + 1
-    );
+    value = value.replace(/{FILE_ACTIVE_CURSOR_ROW}/g, cursorScreenPosition.row + 1);
+    value = value.replace(/{FILE_ACTIVE_CURSOR_COLUMN}/g, cursorScreenPosition.column + 1);
   }
   value = value.replace(/{PROJECT_PATH}/g, projectPath);
   if (atom.project.getRepositories[0]) {
-    value = value.replace(
-      /{REPO_BRANCH_SHORT}/g,
-      atom.project.getRepositories()[0].getShortHead()
-    );
+    value = value.replace(/{REPO_BRANCH_SHORT}/g, atom.project.getRepositories()[0].getShortHead());
   }
 
   return value;
