@@ -9,6 +9,7 @@ import crossSpawn from 'cross-spawn';
 import ErrorMatcher from './error-matcher';
 import kill from 'tree-kill';
 import Linter from './linter-integration';
+import pkg from '../package.json';
 import SaveConfirmView from './save-confirm-view';
 import StatusBarView from './status-bar-view';
 import TargetManager from './target-manager';
@@ -27,7 +28,7 @@ export default {
       process.env.PATH = (process.env.PATH ? process.env.PATH + ':' : '') + '/usr/local/bin';
     }
 
-    atomPackageDeps.install('build');
+    atomPackageDeps.install(pkg.name);
 
     this.tools = [Tools];
     this.linter = null;
