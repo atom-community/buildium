@@ -57,7 +57,7 @@ export default class CustomFile extends EventEmitter {
   }
 
   destructor() {
-    this.fileWatchers.forEach((fw) => fw.close());
+    this.fileWatchers.map((fw) => fw.close());
   }
 
   getNiceName() {
@@ -78,7 +78,7 @@ export default class CustomFile extends EventEmitter {
   }
 
   async settings() {
-    this.fileWatchers.forEach((fw) => fw.close());
+    this.fileWatchers.map((fw) => fw.close());
     // On Linux, closing a watcher triggers a new callback, which causes an infinite loop
     // fallback to `watchFile` here which polls instead.
     this.fileWatchers = this.files.map((file) => (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () => this.emit('refresh')));

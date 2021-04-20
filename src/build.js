@@ -294,7 +294,7 @@ export default {
 
   doSaveConfirm(modifiedTextEditors, continuecb, cancelcb) {
     const saveAndContinue = (save) => {
-      modifiedTextEditors.forEach((textEditor) => save && textEditor.save());
+      modifiedTextEditors.map((textEditor) => save && textEditor.save());
       continuecb();
     };
 
