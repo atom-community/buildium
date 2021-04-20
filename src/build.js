@@ -36,7 +36,6 @@ export default {
     this.setupTargetManager();
     this.setupBuildView();
     this.setupErrorMatcher();
-    this.targetManager.refreshTargets();
 
     atom.commands.add('atom-workspace', 'buildium:trigger', () => this.build('trigger'));
     atom.commands.add('atom-workspace', 'buildium:stop', () => this.stop());
@@ -58,6 +57,7 @@ export default {
     });
 
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
+    atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
 
     if (!atom.config.get('buildium.muteConflictWarning') && atom.packages.isPackageActive('build')) {
       this.disableBuild();
