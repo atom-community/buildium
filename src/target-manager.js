@@ -70,7 +70,7 @@ class TargetManager extends EventEmitter {
           pathTarget.instancedTools.push(tool);
           tool.on && tool.on('refresh', this.refreshTargets.bind(this, [path]));
           return Promise.resolve()
-            .then(() => tool.settings())
+            .then(async () => await tool.settings())
             .catch((err) => {
               if (err instanceof SyntaxError) {
                 atom.notifications.addError('Invalid build file.', {

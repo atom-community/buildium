@@ -1,29 +1,24 @@
-// import CSON from 'cson-parser';
 import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import JSON from 'json5';
-import CSON from 'cson-parser';
-import YAML from 'js-yaml';
+import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
+import loaders from './loaders';
 
-function getConfig(file) {
-  const realFile = fs.realpathSync(file);
-
-  switch (path.extname(file)) {
-    case '.json':
-    case '.json5':
-      return JSON.parse(fs.readFileSync(realFile).toString());
-
-    case '.cson':
-      return CSON.parse(fs.readFileSync(realFile).toString());
-
-    case '.yaml':
-    case '.yml':
-      return YAML.safeLoad(fs.readFileSync(realFile).toString());
+const explorer = cosmiconfig('buildium', {
+  searchPlaces: ['.atom-build.json', '.atom-build.js', '.atom-build.cjs', '.atom-build.yml', '.atom-build.yaml', '.atom-build.toml'],
+  loaders: {
+    '.cson': loaders.cson,
+    '.toml': loaders.toml,
+    '.json5': loaders.json5,
+    'noExt': defaultLoaders['.json']
   }
+});
 
-  return {};
+async function getConfig(file) {
+  const realFile = await fs.promises.realpath(file);
+
+  return (await explorer.load(realFile)).config || {};
 }
 
 function createBuildConfig(build, name) {
@@ -72,20 +67,24 @@ export default class CustomFile extends EventEmitter {
     this.files = [].concat
       .apply(
         [],
-        ['json', 'json5', 'cson', 'yaml', 'yml'].map((ext) => [path.join(this.cwd, `.atom-build.${ext}`), path.join(os.homedir(), `.atom-build.${ext}`)])
+        ['cjs', 'js', 'json', 'json5', 'cson', , 'toml', 'yaml', 'yml'].map((ext) => [
+          path.join(this.cwd, `.atom-build.${ext}`),
+          path.join(os.homedir(), `.atom-build.${ext}`)
+        ])
       )
       .filter(fs.existsSync);
     return 0 < this.files.length;
   }
 
-  settings() {
+  async settings() {
     this.fileWatchers.forEach((fw) => fw.close());
     // On Linux, closing a watcher triggers a new callback, which causes an infinite loop
     // fallback to `watchFile` here which polls instead.
     this.fileWatchers = this.files.map((file) => (os.platform() === 'linux' ? fs.watchFile : fs.watch)(file, () => this.emit('refresh')));
 
     const config = [];
-    this.files.map(getConfig).map((build) => {
+    const buildConfigs = await Promise.all(this.files.map(async (file) => await getConfig(file)));
+    buildConfigs.map((build) => {
       config.push(
         createBuildConfig(build, build.name || 'default'),
         ...Object.keys(build.targets || {}).map((name) => createBuildConfig(build.targets[name], name))
