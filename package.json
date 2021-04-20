@@ -32,8 +32,10 @@
     "*.{js,json,md}": "prettier --write"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "atom-package-deps": "^7.2.2",
     "atom-space-pen-views": "^2.0.3",
+    "cosmiconfig": "^7.0.0",
     "cross-spawn": "^7.0.3",
     "cson-parser": "^4.0.8",
     "js-yaml": "^4.0.0",
