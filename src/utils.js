@@ -65,7 +65,7 @@ const replace = (value = '', targetEnv) => {
 
   const projectPaths = atom.project.getPaths().map(async (projectPath) => {
     try {
-      return await fs.promises.realpathSync(projectPath);
+      return await fs.promises.realpath(projectPath);
     } catch (e) {
       /* Do nothing. */
     }
