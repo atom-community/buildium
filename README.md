@@ -9,7 +9,7 @@
 
 This package is a fork of `build`, with a few key-differences:
 
-- CCPA/GDPR compilant: no tracking
+- no user tracking
 - deferred package activation
 - support for JSON build-files with comments
 - support for TOML build-files
