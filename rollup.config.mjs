@@ -23,7 +23,7 @@ export default [
       dir: 'lib',
       exports: 'default',
       format: 'cjs',
-      sourcemap: true
+      sourcemap: process.env.ROLLUP_WATCH ? true : false
     },
     external: [
       // Atom
