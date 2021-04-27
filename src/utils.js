@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const uniquifySettings = (settings) => {
+function uniquifySettings(settings) {
   const genName = (name, index) => `${name} - ${index}`;
   const newSettings = [];
   settings.forEach((setting) => {
@@ -13,9 +13,9 @@ const uniquifySettings = (settings) => {
     newSettings.push({ ...setting, name: testName });
   });
   return newSettings;
-};
+}
 
-const activePath = () => {
+function activePath() {
   const textEditor = atom.workspace.getActiveTextEditor();
   if (!textEditor || !textEditor.getPath()) {
     /* default to building the first one if no editor is active */
@@ -39,9 +39,9 @@ const activePath = () => {
         return false;
       }
     });
-};
+}
 
-const getDefaultSettings = (cwd, setting) => {
+function getDefaultSettings(cwd, setting) {
   return Object.assign({}, setting, {
     env: setting.env || {},
     args: setting.args || [],
@@ -49,9 +49,9 @@ const getDefaultSettings = (cwd, setting) => {
     sh: undefined === setting.sh ? true : setting.sh,
     errorMatch: setting.errorMatch || ''
   });
-};
+}
 
-const replace = (value = '', targetEnv) => {
+function replace(value = '', targetEnv) {
   if (!(typeof value === 'string')) {
     return value;
   }
@@ -92,6 +92,6 @@ const replace = (value = '', targetEnv) => {
   }
 
   return value;
-};
+}
 
 export { uniquifySettings, activePath, getDefaultSettings, replace };
