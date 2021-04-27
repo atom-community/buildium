@@ -4,7 +4,7 @@ import * as atomPackageDeps from 'atom-package-deps';
 import * as Utils from './utils';
 import BuildError from './build-error';
 import BuildView from './build-view';
-import configSchema from './config';
+import config from './config';
 import crossSpawn from 'cross-spawn';
 import ErrorMatcher from './error-matcher';
 import kill from 'tree-kill';
@@ -16,7 +16,7 @@ import TargetManager from './target-manager';
 import Tools from './atom-build';
 
 export default {
-  config: configSchema,
+  config: config.schema,
 
   activate() {
     if (!/^win/.test(process.platform)) {
