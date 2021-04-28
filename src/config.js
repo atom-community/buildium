@@ -10,11 +10,12 @@ export default {
       enum: ['Toggle', 'Keep Visible', 'Show on Error', 'Hidden'],
       order: 1
     },
-    hidePanelHeading: {
-      title: 'Hide panel heading',
-      description: 'Set whether to hide the build command and control buttons in the build panel',
-      type: 'boolean',
-      default: false,
+    autoToggleInterval: {
+      title: 'Auto-toggle Interval',
+      description: 'Set the interval until the panel closes automatically, in milliseconds. This setting works with *Panel Visibility* set to *Toggle*',
+      type: 'integer',
+      minimum: 1000,
+      default: 3000,
       order: 2
     },
     buildOnSave: {
@@ -51,13 +52,6 @@ export default {
       type: 'boolean',
       default: true,
       order: 7
-    },
-    overrideThemeColors: {
-      title: 'Override Theme Colors',
-      description: 'Override theme background- and text color inside the terminal',
-      type: 'boolean',
-      default: true,
-      order: 8
     },
     selectTriggers: {
       title: 'Selecting new target triggers the build',
