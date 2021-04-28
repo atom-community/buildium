@@ -6,6 +6,7 @@ import BuildError from './build-error';
 import BuildView from './build-view';
 import config from './config';
 import crossSpawn from 'cross-spawn';
+import DevConsole from './log';
 import ErrorMatcher from './error-matcher';
 import kill from 'tree-kill';
 import Linter from './linter-integration';
@@ -19,6 +20,8 @@ export default {
   config: config.schema,
 
   activate() {
+    DevConsole.log('Activating package');
+
     if (!/^win/.test(process.platform)) {
       // Manually append /usr/local/bin as it may not be set on some systems,
       // and it's common to have node installed here. Keep it at end so it won't
@@ -78,7 +81,6 @@ export default {
           this.targetManager.refreshTargets();
         }
       });
-
       atom.packages.onDidDeactivatePackage((e) => {
         if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
           console.log('Deactivating', e.name);
@@ -86,7 +88,7 @@ export default {
         }
       });
     });
-    this.targetManager.on('new-active-target', (path, target) => {
+    this.targetManager.on('new-active-target', () => {
       this.updateStatusBar();
 
       if (atom.config.get('buildium.selectTriggers')) {
@@ -113,6 +115,8 @@ export default {
   },
 
   deactivate() {
+    DevConsole.log('Deactivating package');
+
     if (this.child) {
       this.child.removeAllListeners();
       kill(this.child.pid, 'SIGKILL');
@@ -370,11 +374,15 @@ export default {
   },
 
   consumeLinterRegistry(registry) {
+    DevConsole.log('Consuming linter');
+
     this.linter && this.linter.destroy();
     this.linter = new Linter(registry);
   },
 
   consumeBuilder(builder) {
+    DevConsole.log('Consuming builder');
+
     if (Array.isArray(builder)) this.tools.push(...builder);
     else this.tools.push(builder);
     this.targetManager.setTools(this.tools);
@@ -385,6 +393,8 @@ export default {
   },
 
   consumeStatusBar(statusBar) {
+    DevConsole.log('Consuming status-bar');
+
     this.statusBarView = new StatusBarView(statusBar);
     this.statusBarView.onClick(() => this.targetManager.selectActiveTarget());
     this.statusBarView.attach();
@@ -392,6 +402,8 @@ export default {
   },
 
   consumeBusySignal(registry) {
+    DevConsole.log('Consuming busy-signal');
+
     this.busyProvider = registry.create();
     this.targetManager.setBusyProvider(this.busyProvider);
   }

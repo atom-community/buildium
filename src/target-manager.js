@@ -1,5 +1,6 @@
 import { CompositeDisposable } from 'atom';
 import * as Utils from './utils';
+import DevConsole from './log';
 import EventEmitter from 'events';
 import TargetsView from './targets-view';
 
@@ -54,6 +55,8 @@ class TargetManager extends EventEmitter {
   }
 
   refreshTargets(refreshPaths) {
+    DevConsole.log('Refreshing targets');
+
     refreshPaths = refreshPaths || atom.project.getPaths();
 
     this.busyProvider && this.busyProvider.add(`Refreshing targets for ${refreshPaths.join(',')}`);
