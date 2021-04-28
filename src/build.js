@@ -70,6 +70,22 @@ export default {
     this.targetManager.on('refresh-complete', () => {
       this.updateStatusBar();
     });
+    this.targetManager.once('refresh-complete', () => {
+      console.log('First refresh complete');
+      atom.packages.onDidActivatePackage((e) => {
+        if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
+          console.log('Activating', e.name);
+          this.targetManager.refreshTargets();
+        }
+      });
+
+      atom.packages.onDidDeactivatePackage((e) => {
+        if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
+          console.log('Deactivating', e.name);
+          this.targetManager.refreshTargets();
+        }
+      });
+    });
     this.targetManager.on('new-active-target', (path, target) => {
       this.updateStatusBar();
 
@@ -372,6 +388,7 @@ export default {
     this.statusBarView = new StatusBarView(statusBar);
     this.statusBarView.onClick(() => this.targetManager.selectActiveTarget());
     this.statusBarView.attach();
+    this.targetManager.refreshTargets();
   },
 
   consumeBusySignal(registry) {
