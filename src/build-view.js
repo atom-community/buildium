@@ -1,4 +1,5 @@
 import { View, $ } from 'atom-space-pen-views';
+import Config from './config';
 import Terminal from 'term.js';
 
 export default class BuildView extends View {
@@ -58,7 +59,7 @@ export default class BuildView extends View {
       convertEol: true,
       useFocus: false,
       termName: 'xterm-256color',
-      scrollback: atom.config.get('buildium.terminalScrollback')
+      scrollback: Config.get('terminalScrollback')
     });
 
     // On some systems, prependListern and prependOnceListener is expected to exist. Add them until terminal replacement is here.
@@ -86,8 +87,8 @@ export default class BuildView extends View {
     this.resizeMoved = ::this.resizeMoved;
     this.resizeEnded = ::this.resizeEnded;
 
-    atom.config.observe('buildium.panelVisibility', ::this.visibleFromConfig);
-    atom.config.observe('buildium.panelOrientation', ::this.orientationFromConfig);
+    Config.observe('.panelVisibility', ::this.visibleFromConfig);
+    Config.observe('panelOrientation', ::this.orientationFromConfig);
     atom.config.observe('editor.fontSize', ::this.fontSizeFromConfig);
     atom.config.observe('editor.fontFamily', ::this.fontFamilyFromConfig);
     atom.commands.add('atom-workspace', 'buildium:toggle-panel', ::this.toggle);
@@ -107,7 +108,7 @@ export default class BuildView extends View {
   resizeMoved(ev) {
     const { h } = this.fontGeometry;
 
-    switch (atom.config.get('buildium.panelOrientation')) {
+    switch (Config.get('panelOrientation')) {
       case 'Bottom': {
         const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
         if (Math.abs(delta) < (h * 5) / 6) return;
@@ -151,7 +152,7 @@ export default class BuildView extends View {
   }
 
   resizeToNearestRow() {
-    if (-1 !== ['Top', 'Bottom'].indexOf(atom.config.get('buildium.panelOrientation'))) {
+    if (-1 !== ['Top', 'Bottom'].indexOf(Config.get('panelOrientation'))) {
       this.fixTerminalElHeight();
     }
     this.resizeTerminal();
@@ -184,7 +185,7 @@ export default class BuildView extends View {
 
   attach(force = false) {
     if (!force) {
-      switch (atom.config.get('buildium.panelVisibility')) {
+      switch (Config.get('panelVisibility')) {
         case 'Hidden':
         case 'Show on Error':
           return;
@@ -201,7 +202,7 @@ export default class BuildView extends View {
       Left: atom.workspace.addLeftPanel,
       Right: atom.workspace.addRightPanel
     };
-    const orientation = atom.config.get('buildium.panelOrientation') || 'Bottom';
+    const orientation = Config.get('panelOrientation') || 'Bottom';
     this.panel = addfn[orientation].call(atom.workspace, { item: this });
     this.fixTerminalElHeight();
     this.resizeToNearestRow();
@@ -217,7 +218,7 @@ export default class BuildView extends View {
     if (atom.views.getView(atom.workspace) && document.activeElement === this[0]) {
       atom.views.getView(atom.workspace).focus();
     }
-    if (this.panel && (force || 'Keep Visible' !== atom.config.get('buildium.panelVisibility'))) {
+    if (this.panel && (force || 'Keep Visible' !== Config.get('panelVisibility'))) {
       this.panel.destroy();
       this.panel = null;
     }
@@ -317,7 +318,7 @@ export default class BuildView extends View {
     this.starttime = new Date();
     this.reset();
     this.attach();
-    if (atom.config.get('buildium.stealFocus')) {
+    if (Config.get('stealFocus')) {
       this.focus();
     }
     this.updateTitle();
@@ -325,7 +326,7 @@ export default class BuildView extends View {
 
   buildFinished(success) {
     if (!success && !this.isAttached()) {
-      this.attach(atom.config.get('buildium.panelVisibility') === 'Show on Error');
+      this.attach(Config.get('panelVisibility') === 'Show on Error');
     }
     this.finalizeBuild(success);
   }

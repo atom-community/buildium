@@ -140,6 +140,27 @@ export default {
     atom.config.unset(`${name}.${oldKey}`);
   },
 
+  observe(...args) {
+    let key, options, callback;
+
+    switch (args.length) {
+      case 2:
+        [key, callback] = args;
+        options = {};
+        break;
+
+      case 3:
+        [keyPath, options, callback] = args;
+        break;
+
+      default:
+        console.error('An unsupported form of Config::observe is being used. See https://atom.io/docs/api/latest/Config for details');
+        return;
+    }
+
+    atom.config.observe(`${name}.${key}`, options, callback);
+  },
+
   unset(key = '') {
     const unsetKey = key?.length ? `${name}.${key}` : name;
 

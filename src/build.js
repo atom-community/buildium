@@ -4,7 +4,7 @@ import * as atomPackageDeps from 'atom-package-deps';
 import * as Utils from './utils';
 import BuildError from './build-error';
 import BuildView from './build-view';
-import config from './config';
+import Config from './config';
 import crossSpawn from 'cross-spawn';
 import DevConsole from './log';
 import ErrorMatcher from './error-matcher';
@@ -17,7 +17,7 @@ import TargetManager from './target-manager';
 import Tools from './atom-build';
 
 export default {
-  config: config.schema,
+  config: Config.schema,
 
   activate() {
     DevConsole.log('Activating package');
@@ -53,7 +53,7 @@ export default {
 
     atom.workspace.observeTextEditors((editor) => {
       editor.onDidSave(() => {
-        if (atom.config.get('buildium.buildOnSave')) {
+        if (Config.get('buildOnSave')) {
           this.build('save');
         }
       });
@@ -62,7 +62,7 @@ export default {
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
     atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
 
-    if (!atom.config.get('buildium.muteConflictWarning') && atom.packages.isPackageActive('build')) {
+    if (!Config.get('muteConflictWarning') && atom.packages.isPackageActive('build')) {
       this.disableBuild();
     }
   },
@@ -91,7 +91,7 @@ export default {
     this.targetManager.on('new-active-target', () => {
       this.updateStatusBar();
 
-      if (atom.config.get('buildium.selectTriggers')) {
+      if (Config.get('selectTriggers')) {
         this.build('trigger');
       }
     });
@@ -225,13 +225,13 @@ export default {
           this.errorMatcher.set(target, cwd, stdout + stderr);
 
           let success = 0 === exitCode;
-          if (atom.config.get('buildium.matchedErrorFailsBuild')) {
+          if (Config.get('matchedErrorFailsBuild')) {
             success = success && !this.errorMatcher.getMatches().some((match) => match.type && match.type.toLowerCase() === 'error');
           }
 
           this.linter && this.linter.processMessages(this.errorMatcher.getMatches(), cwd);
 
-          if (atom.config.get('buildium.beepWhenDone')) {
+          if (Config.get('beepWhenDone')) {
             atom.beep();
           }
 
@@ -245,9 +245,9 @@ export default {
             if (success) {
               this.finishedTimer = setTimeout(() => {
                 this.buildView.detach();
-              }, atom.config.get('buildium.autoToggleInterval'));
+              }, Config.get('autoToggleInterval'));
             } else {
-              if (atom.config.get('buildium.scrollOnError')) {
+              if (Config.get('scrollOnError')) {
                 this.errorMatcher.matchFirst();
               }
             }
@@ -318,7 +318,7 @@ export default {
       continuecb();
     };
 
-    if (0 === modifiedTextEditors.length || atom.config.get('buildium.saveOnBuild')) {
+    if (0 === modifiedTextEditors.length || Config.get('saveOnBuild')) {
       saveAndContinue(true);
       return;
     }

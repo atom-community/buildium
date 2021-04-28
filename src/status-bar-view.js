@@ -1,24 +1,25 @@
 import { View } from 'atom-space-pen-views';
+import Config from './config';
 
 export default class StatusBarView extends View {
   constructor(statusBar, ...args) {
     super(...args);
     this.statusBar = statusBar;
-    atom.config.observe('buildium.statusBar', () => this.attach());
-    atom.config.observe('buildium.statusBarPriority', () => this.attach());
+    Config.observe('statusBar', () => this.attach());
+    Config.observe('statusBarPriority', () => this.attach());
   }
 
   attach() {
     this.destroy();
 
-    const orientation = atom.config.get('buildium.statusBar');
+    const orientation = Config.get('statusBar');
     if ('Disable' === orientation) {
       return;
     }
 
     this.statusBarTile = this.statusBar[`add${orientation}Tile`]({
       item: this,
-      priority: atom.config.get('buildium.statusBarPriority')
+      priority: Config.get('statusBarPriority')
     });
 
     this.tooltip = atom.tooltips.add(this, {

@@ -1,5 +1,6 @@
 import { CompositeDisposable } from 'atom';
 import * as Utils from './utils';
+import Config from './config';
 import DevConsole from './log';
 import EventEmitter from 'events';
 import TargetsView from './targets-view';
@@ -151,7 +152,7 @@ class TargetManager extends EventEmitter {
           return;
         }
 
-        if (atom.config.get('buildium.notificationOnRefresh')) {
+        if (Config.get('notificationOnRefresh')) {
           const rows = refreshPaths.map((path) => {
             const pathTarget = this.pathTargets.find((pt) => pt.path === path);
             if (!pathTarget) {
@@ -187,7 +188,7 @@ class TargetManager extends EventEmitter {
   }
 
   selectActiveTarget() {
-    if (atom.config.get('buildium.refreshOnShowTargetList')) {
+    if (Config.get('refreshOnShowTargetList')) {
       this.refreshTargets();
     }
 
