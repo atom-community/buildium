@@ -245,7 +245,7 @@ export default {
             if (success) {
               this.finishedTimer = setTimeout(() => {
                 this.buildView.detach();
-              }, 1200);
+              }, atom.config.get('buildium.autoToggleInterval'));
             } else {
               if (atom.config.get('buildium.scrollOnError')) {
                 this.errorMatcher.matchFirst();
