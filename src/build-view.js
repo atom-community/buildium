@@ -13,25 +13,34 @@ export default class BuildView extends View {
   static content() {
     this.div({ tabIndex: -1, class: 'build tool-panel native-key-bindings' }, () => {
       this.div({ class: 'heading', outlet: 'panelHeading' }, () => {
-        this.div({ class: 'control-container opaque-hover' }, () => {
-          this.button({
-            class: 'btn btn-default icon icon-zap',
-            click: 'build',
-            title: 'Build current project'
-          });
-          this.button({
-            class: 'btn btn-default icon icon-trashcan',
-            click: 'clearOutput'
-          });
-          this.button({
-            class: 'btn btn-default icon icon-x',
-            click: 'close'
-          });
+        this.div({ class: 'control-container' }, () => {
+          this.button(
+            {
+              class: 'btn btn-default icon icon-zap',
+              click: 'build',
+              title: 'Build current project'
+            },
+            'Build'
+          );
+          this.button(
+            {
+              class: 'btn btn-default icon icon-trashcan',
+              click: 'clearOutput'
+            },
+            'Clear'
+          );
+          this.button(
+            {
+              class: 'btn btn-default icon icon-x',
+              click: 'close'
+            },
+            'Close'
+          );
           this.div({ class: 'title', outlet: 'title' }, () => {
             this.span({ class: 'build-timer', outlet: 'buildTimer' }, this.initialTimerText());
           });
         });
-        this.div({ class: 'icon heading-text', outlet: 'heading' }, this.initialHeadingText());
+        this.div({ class: 'icon heading-text text-highlight', outlet: 'heading' }, this.initialHeadingText());
       });
 
       this.div({ class: 'output panel-body', outlet: 'output' });
@@ -77,13 +86,6 @@ export default class BuildView extends View {
 
     atom.config.observe('buildium.panelVisibility', ::this.visibleFromConfig);
     atom.config.observe('buildium.panelOrientation', ::this.orientationFromConfig);
-    atom.config.observe('buildium.hidePanelHeading', (hide) => {
-      (hide && this.panelHeading.hide()) || this.panelHeading.show();
-    });
-    atom.config.observe('buildium.overrideThemeColors', (override) => {
-      this.output.removeClass('override-theme');
-      override && this.output.addClass('override-theme');
-    });
     atom.config.observe('editor.fontSize', ::this.fontSizeFromConfig);
     atom.config.observe('editor.fontFamily', ::this.fontFamilyFromConfig);
     atom.commands.add('atom-workspace', 'buildium:toggle-panel', ::this.toggle);
