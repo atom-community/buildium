@@ -1,5 +1,6 @@
 import { View, $ } from 'atom-space-pen-views';
 import Config from './config';
+import pkg from '../package.json';
 import Terminal from 'term.js';
 
 export default class BuildView extends View {
@@ -8,7 +9,7 @@ export default class BuildView extends View {
   }
 
   static initialHeadingText() {
-    return 'Buildium';
+    return `${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)} v${pkg.version}`;
   }
 
   static content() {
@@ -87,7 +88,7 @@ export default class BuildView extends View {
     this.resizeMoved = ::this.resizeMoved;
     this.resizeEnded = ::this.resizeEnded;
 
-    Config.observe('.panelVisibility', ::this.visibleFromConfig);
+    Config.observe('panelVisibility', ::this.visibleFromConfig);
     Config.observe('panelOrientation', ::this.orientationFromConfig);
     atom.config.observe('editor.fontSize', ::this.fontSizeFromConfig);
     atom.config.observe('editor.fontFamily', ::this.fontFamilyFromConfig);
