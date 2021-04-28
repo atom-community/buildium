@@ -1,15 +1,15 @@
+import { capitalizedName, getVersion } from './utils';
 import { View, $ } from 'atom-space-pen-views';
 import Config from './config';
-import pkg from '../package.json';
-import Terminal from 'term.js';
+import Terminal from 'xterm';
 
 export default class BuildView extends View {
   static initialTimerText() {
-    return '0.0 s';
+    return '0.000 s';
   }
 
   static initialHeadingText() {
-    return `${pkg.name.charAt(0).toUpperCase()}${pkg.name.slice(1)} v${pkg.version}`;
+    return `${capitalizedName()} ${getVersion()}`;
   }
 
   static content() {
@@ -291,7 +291,7 @@ export default class BuildView extends View {
   }
 
   updateTitle() {
-    this.buildTimer.text(((new Date() - this.starttime) / 1000).toFixed(1) + ' s');
+    this.buildTimer.text(((new Date() - this.starttime) / 1000).toFixed(3) + ' s');
     this.titleTimer = setTimeout(this.updateTitle.bind(this), 100);
   }
 
