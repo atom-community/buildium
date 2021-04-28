@@ -65,7 +65,7 @@ export default class BuildView extends View {
 
     // On some systems, prependListern and prependOnceListener is expected to exist. Add them until terminal replacement is here.
     this.terminal.prependListener = (...a) => {
-      this.terminal.addListener(...a);
+      this.terminal.on(...a);
     };
     this.terminal.prependOnceListener = (...a) => {
       this.terminal.addOnceListener(...a);
