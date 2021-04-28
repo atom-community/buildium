@@ -159,7 +159,7 @@ export default {
         }
 
         this.statusBarView && this.statusBarView.buildStarted();
-        this.busyProvider && this.busyProvider.add(`Build: ${target.name}`);
+        this.busyProvider && this.busyProvider.add(`${Utils.capitalizedName()}: ${target.name}`);
         this.buildView.buildStarted();
         this.buildView.setHeading('Running preBuild...');
 
@@ -239,7 +239,7 @@ export default {
           return Promise.resolve(target.postBuild ? target.postBuild(success, stdout, stderr) : null).then(() => {
             this.buildView.setHeading(buildTitle);
 
-            this.busyProvider && this.busyProvider.remove(`Build: ${target.name}`, success);
+            this.busyProvider && this.busyProvider.remove(`${Utils.capitalizedName()}: ${target.name}`, success);
             this.buildView.buildFinished(success);
             this.statusBarView && this.statusBarView.setBuildSuccess(success);
             if (success) {
