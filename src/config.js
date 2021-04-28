@@ -124,6 +124,10 @@ export default {
     return key?.length ? atom.config.get(`${name}.${key}`) : atom.config.get(`${name}`);
   },
 
+  set(key, value) {
+    atom.config.set(`${name}.${key}`, value);
+  },
+
   migrate(oldKey, newKey) {
     if (!atom.config.get(`${name}.${oldKey}`) || atom.config.get(`${name}.${newKey}`)) {
       return;
