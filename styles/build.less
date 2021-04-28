@@ -1,11 +1,9 @@
 @import "ui-variables";
-@import "animations";
 
 .build {
 
   min-width: 250px;
   font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-  font-weight: 600;
   font-size: @font-size;
 
   .resizer {
@@ -16,16 +14,10 @@
 
   .heading {
     -webkit-user-select: none;
+    font-family: system-ui;
+    font-size: @font-size;
     line-height: 3.0em;
     padding: 0 3px;
-
-    &.success {
-      animation: flash-background-success linear 1.2s;
-    }
-
-    &.error {
-      animation: flash-background-error linear 1.2s;
-    }
 
     .heading-text {
       overflow: hidden;
@@ -35,18 +27,12 @@
       &::before {
         margin-right: 5px;
         color: @text-color-error;
-        animation: flash linear infinite 1.0s;
       }
     }
 
     .control-container {
       float: right;
       margin-left: @component-padding;
-
-      .btn {
-        color: @text-color-info;
-        margin: 0 1px;
-      }
 
       .title {
         float: left;
@@ -68,8 +54,8 @@
 
   .output {
     &.override-theme {
-      color: #fff;
-      background-color: #000;
+      color: @text-color;
+      background-color: @input-background-color;
     }
 
     .terminal {
