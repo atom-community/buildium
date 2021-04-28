@@ -18,7 +18,7 @@ export default class BuildView extends View {
             {
               class: 'btn btn-default icon icon-zap',
               click: 'build',
-              title: 'Build current project'
+              title: 'Builds current project'
             },
             'Build'
           );
