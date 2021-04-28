@@ -150,5 +150,15 @@ export default {
     const unsetKey = key?.length ? `${name}.${key}` : name;
 
     atom.config.unset(unsetKey);
+  },
+
+  open(options = {}) {
+    options = {
+      pending: true,
+      searchAllPanes: true,
+      ...options
+    };
+
+    atom.workspace.open(`atom://config/packages/${name}`, options);
   }
 };
