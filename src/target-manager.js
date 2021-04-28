@@ -112,7 +112,7 @@ class TargetManager extends EventEmitter {
 
           settings.forEach((setting, index) => {
             if (setting.keymap && !setting.atomCommandName) {
-              setting.atomCommandName = `build:trigger:${setting.name}`;
+              setting.atomCommandName = `buildium:trigger:${setting.name}`;
             }
 
             if (setting.atomCommandName) {
