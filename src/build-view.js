@@ -25,14 +25,16 @@ export default class BuildView extends View {
           this.button(
             {
               class: 'btn btn-default icon icon-trashcan',
-              click: 'clearOutput'
+              click: 'clearOutput',
+              title: 'Clears the output'
             },
             'Clear'
           );
           this.button(
             {
               class: 'btn btn-default icon icon-x',
-              click: 'close'
+              click: 'close',
+              title: 'Closes the build panel'
             },
             'Close'
           );
