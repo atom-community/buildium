@@ -13,6 +13,7 @@ This package is a fork of `build`, with a few key-differences:
 - deferred package activation
 - support for JSON build-files with comments
 - support for TOML build-files
+- improved visual integration
 - updated dependencies
 
 ## Installation
