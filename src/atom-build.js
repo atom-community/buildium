@@ -1,11 +1,12 @@
+import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
 import EventEmitter from 'events';
 import fs from 'fs';
+import loaders from './loaders';
 import os from 'os';
 import path from 'path';
-import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
-import loaders from './loaders';
+import pkg from '../package.json';
 
-const explorer = cosmiconfig('buildium', {
+const explorer = cosmiconfig(pkg.name, {
   searchPlaces: ['.atom-build.cjs', '.atom-build.js', '.atom-build.json', '.atom-build.json5', '.atom-build.toml', '.atom-build.yaml', '.atom-build.yml'],
   loaders: {
     '.cson': loaders.cson,
