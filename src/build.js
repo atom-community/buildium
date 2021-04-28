@@ -365,7 +365,7 @@ export default {
         {
           text: "Don't Ask Again",
           onDidClick() {
-            atom.config.set('buildium.muteConflictWarning', true);
+            Config.set('muteConflictWarning', true);
             return notification.dismiss();
           }
         }
