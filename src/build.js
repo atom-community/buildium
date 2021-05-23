@@ -74,16 +74,16 @@ export default {
       this.updateStatusBar();
     });
     this.targetManager.once('refresh-complete', () => {
-      console.log('First refresh complete');
+      DevConsole.log('First refresh complete');
       atom.packages.onDidActivatePackage((e) => {
         if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
-          console.log('Activating', e.name);
+          DevConsole.log('Activating', e.name);
           this.targetManager.refreshTargets();
         }
       });
       atom.packages.onDidDeactivatePackage((e) => {
         if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
-          console.log('Deactivating', e.name);
+          DevConsole.log('Deactivating', e.name);
           this.targetManager.refreshTargets();
         }
       });
