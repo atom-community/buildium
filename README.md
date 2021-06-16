@@ -77,7 +77,8 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `.atom-build.yaml`
 - `.atom-build.yml`
 
-**Example**️
+<details>
+<summary><strong>Example</strong></summary>️
 
 ```yaml
 cmd: '<command to execute>'
@@ -104,6 +105,8 @@ targets:
     args:
     # (any previous options are viable here except `targets` itself)
 ```
+
+</details>
 
 Please refer to the original documentation for details on [configuration options][config-options].
 
