@@ -80,6 +80,8 @@ If no provider suits your specific needs, you can create a build file in your pr
 <details>
 <summary><strong>Example</strong></summary>️
 
+Let's take a look at a build file written in YAML
+
 ```yaml
 cmd: '<command to execute>'
 name: '<name of target>'
