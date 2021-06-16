@@ -83,10 +83,10 @@ If no provider suits your specific needs, you can create a build file in your pr
 cmd: '<command to execute>'
 name: '<name of target>'
 args:
-  - <argument1>
-  - <argument2>
+  - '<argument1>'
+  - '<argument2>'
 sh: true
-cwd: <current working directory for `cmd`>
+cwd: '<current working directory for `cmd`>'
 env:
   VARIABLE1: 'VALUE1'
   VARIABLE2: 'VALUE2'
@@ -96,8 +96,8 @@ errorMatch:
 warningMatch:
   - ^regexp1$
   - ^regexp2$
-keymap: <keymap string>
-atomCommandName: namespace:command
+keymap: '<keymap string>'
+atomCommandName: 'namespace:command'
 targets:
   extraTargetName:
     cmd: '<command to execute>'
