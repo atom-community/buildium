@@ -119,7 +119,7 @@ The following parameters will be replaced in `cmd`, any entry in `args`, `cwd` a
 | `{FILE_ACTIVE_NAME_BASE}`     | Base name of the active file, e.g. `build`                                           |
 | `{FILE_ACTIVE_CURSOR_ROW}`    | Line number of the last cursor sits in the active document                           |
 | `{FILE_ACTIVE_CURSOR_COLUMN}` | Column number of the last cursor sits in the active document                         |
-| `{PROJECT_PATH}`              | Full path to project folder, `~/github/atom-build`                                   |
+| `{PROJECT_PATH}`              | Full path to project folder, e.g. `~/github/atom-build`                              |
 | `{REPO_BRANCH_SHORT}`         | Name of the active Git branch, e.g. `main`                                           |
 | `{SELECTION}`                 | Selected text in the active document                                                 |
 
