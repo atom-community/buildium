@@ -6,7 +6,7 @@ export default {
       title: 'Panel Visibility',
       description: 'Set when the build panel should be visible.',
       type: 'string',
-      default: 'Toggle',
+      default: 'Keep Visibl',
       enum: ['Toggle', 'Keep Visible', 'Show on Error', 'Hidden'],
       order: 1
     },
