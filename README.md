@@ -125,7 +125,7 @@ The following parameters will be replaced in `cmd`, any entry in `args`, `cwd` a
 
 ### Keybindings
 
-The following keybindings are for Windows and Linux, Mac users use <kbd>Cmd</kbd> instead of <kbd>Ctrl</kbd>
+The following keybindings are for Windows and Linux, Mac should use <kbd>Cmd</kbd> instead of <kbd>Ctrl</kbd>
 
 | Placeholder                                                                   | Description                                 |
 | ----------------------------------------------------------------------------- | ------------------------------------------- |
@@ -135,8 +135,6 @@ The following keybindings are for Windows and Linux, Mac users use <kbd>Cmd</kbd
 | <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> or <kbd>F8</kbd>                  | Toggles the build panel                     |
 | <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd> or <kbd>F7</kbd>                  | Show available build targets                |
 | <kdb>Esc</kdb>                                                                | Terminates build and closes the build panel |
-
-:apple: Mac users should use
 
 ## License
 
