@@ -77,7 +77,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `.atom-build.yaml`
 - `.atom-build.yml`
 
-**Example:**️
+**Example**️
 
 ```yaml
 cmd: '<command to execute>'
