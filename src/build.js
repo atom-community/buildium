@@ -1,3 +1,6 @@
+import 'core-js';
+import 'regenerator-runtime/runtime';
+
 import { Disposable } from 'atom';
 import { spawn } from 'child_process';
 import * as atomPackageDeps from 'atom-package-deps';
