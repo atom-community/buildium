@@ -13,7 +13,7 @@ import DevConsole from './log';
 import ErrorMatcher from './error-matcher';
 import kill from 'tree-kill';
 import Linter from './linter-integration';
-import pkg from '../package.json';
+import { name } from '../package.json';
 import SaveConfirmView from './save-confirm-view';
 import StatusBarView from './status-bar-view';
 import TargetManager from './target-manager';
@@ -34,7 +34,7 @@ export default {
       process.env.PATH = (process.env.PATH ? process.env.PATH + ':' : '') + '/usr/local/bin';
     }
 
-    atomPackageDeps.install(pkg.name);
+    atomPackageDeps.install(name);
 
     this.tools = [Tools];
     this.linter = null;

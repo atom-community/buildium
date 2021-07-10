@@ -1,5 +1,5 @@
 import fs from 'fs';
-import meta from '../package.json';
+import { name, version } from '../package.json';
 import path from 'path';
 
 function uniquifySettings(settings) {
@@ -96,11 +96,11 @@ function replace(value = '', targetEnv) {
 }
 
 function capitalizedName() {
-  return `${meta.name.charAt(0).toUpperCase()}${meta.name.slice(1)}`;
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 }
 
 function getVersion() {
-  return `v${meta.version}`;
+  return `v${version}`;
 }
 
 export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion };
