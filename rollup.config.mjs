@@ -18,7 +18,7 @@ const plugins = [
 
 export default [
   {
-    input: 'src/build.js',
+    input: 'src/buildium.js',
     output: {
       dir: 'lib',
       exports: 'default',

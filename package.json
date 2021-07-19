@@ -11,7 +11,7 @@
   ],
   "repository": "https://github.com/idleberg/atom-buildium",
   "license": "MIT",
-  "main": "./lib/build",
+  "main": "./lib/buildium",
   "scripts": {
     "build": "npm run clean && rollup --config",
     "dev": "npm run start",
