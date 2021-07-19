@@ -7,7 +7,7 @@ export default class SaveConfirmView extends View {
       this.div({ class: 'btn-container pull-right' }, () => {
         this.button(
           {
-            class: 'btn btn-success',
+            class: 'btn btn-primary',
             outlet: 'saveBuildButton',
             title: 'Save and Build',
             click: 'saveAndConfirm'
@@ -16,18 +16,15 @@ export default class SaveConfirmView extends View {
         );
         this.button(
           {
-            class: 'btn btn-info',
-            title: 'Build Without Saving',
+            class: 'btn btn-primary',
+            title: 'Build without Saving',
             click: 'confirmWithoutSave'
           },
-          'Build Without Saving'
+          'Build without Saving'
         );
       });
       this.div({ class: 'btn-container pull-left' }, () => {
-        this.button(
-          { class: 'btn btn-info', title: 'Cancel', click: 'cancel' },
-          'Cancel'
-        );
+        this.button({ class: 'btn', title: 'Cancel', click: 'cancel' }, 'Cancel');
       });
     });
   }
