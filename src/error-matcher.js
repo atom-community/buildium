@@ -13,8 +13,8 @@ export default class ErrorMatcher extends EventEmitter {
     this.currentMatch = [];
     this.firstMatchId = null;
 
-    atom.commands.add('atom-workspace', 'buildium:error-match', ::this.match);
-    atom.commands.add('atom-workspace', 'buildium:error-match-first', ::this.matchFirst);
+    atom.commands.add('atom-workspace', 'buildium:error-match', this.match.bind(this));
+    atom.commands.add('atom-workspace', 'buildium:error-match-first', this.matchFirst.bind(this));
   }
 
   _gotoNext() {

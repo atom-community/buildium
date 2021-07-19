@@ -79,20 +79,20 @@ export default class BuildView extends View {
 
     this.fontGeometry = { w: 15, h: 15 };
     this.terminal.open(this.output[0]);
-    this.destroyTerminal = ::this.terminal.destroy;
+    this.destroyTerminal = this.terminal.destroy.bind(this);
     this.terminal.destroy = this.terminal.destroySoon = () => {}; // This terminal will be open forever and reset when necessary
     this.terminalEl = $(this.terminal.element);
     this.terminalEl[0].terminal = this.terminal; // For testing purposes
 
-    this.resizeStarted = ::this.resizeStarted;
-    this.resizeMoved = ::this.resizeMoved;
-    this.resizeEnded = ::this.resizeEnded;
+    this.resizeStarted = this.resizeStarted.bind(this);
+    this.resizeMoved = this.resizeMoved.bind(this);
+    this.resizeEnded = this.resizeEnded.bind(this);
 
-    Config.observe('panelVisibility', ::this.visibleFromConfig);
-    Config.observe('panelOrientation', ::this.orientationFromConfig);
-    atom.config.observe('editor.fontSize', ::this.fontSizeFromConfig);
-    atom.config.observe('editor.fontFamily', ::this.fontFamilyFromConfig);
-    atom.commands.add('atom-workspace', 'buildium:toggle-panel', ::this.toggle);
+    Config.observe('panelVisibility', this.visibleFromConfig.bind(this));
+    Config.observe('panelOrientation', this.orientationFromConfig.bind(this));
+    atom.config.observe('editor.fontSize', this.fontSizeFromConfig.bind(this));
+    atom.config.observe('editor.fontFamily', this.fontFamilyFromConfig.bind(this));
+    atom.commands.add('atom-workspace', 'buildium:toggle-panel', this.toggle.bind(this));
   }
 
   destroy() {
