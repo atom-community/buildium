@@ -68,6 +68,17 @@ export default {
     if (!Config.get('muteConflictWarning') && atom.packages.isPackageActive('build')) {
       this.disableBuild();
     }
+
+    document.body.style.setProperty('--buildium-terminal-font-family', atom.config.get('editor.fontFamily'));
+    document.body.style.setProperty('--buildium-terminal-font-size', atom.config.get('editor.fontSize'));
+
+    atom.config.onDidChange('editor.fontFamily', ({ newValue }) => {
+      document.body.style.setProperty('--buildium-terminal-font-family', newValue);
+    });
+
+    atom.config.onDidChange('editor.fontSize', ({ newValue }) => {
+      document.body.style.setProperty('--buildium-terminal-font-size', newValue);
+    });
   },
 
   setupTargetManager() {
