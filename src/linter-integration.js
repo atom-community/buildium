@@ -14,10 +14,7 @@ class Linter {
     function extractRange(json) {
       return [
         [(json.line || 1) - 1, (json.col || 1) - 1],
-        [
-          (json.line_end || json.line || 1) - 1,
-          (json.col_end || json.col || 1) - 1
-        ]
+        [(json.line_end || json.line || 1) - 1, (json.col_end || json.col || 1) - 1]
       ];
     }
     function normalizePath(p) {
@@ -38,10 +35,7 @@ class Linter {
     this.linter.setMessages(
       messages.map((match) => ({
         type: match.type || 'Error',
-        text:
-          !match.message && !match.html_message
-            ? 'Error from build'
-            : match.message,
+        text: !match.message && !match.html_message ? 'Error from build' : match.message,
         html: match.message ? undefined : match.html_message,
         filePath: normalizePath(match.file),
         severity: typeToSeverity(match.type),
@@ -50,10 +44,7 @@ class Linter {
           match.trace &&
           match.trace.map((trace) => ({
             type: trace.type || 'Trace',
-            text:
-              !trace.message && !trace.html_message
-                ? 'Trace in build'
-                : trace.message,
+            text: !trace.message && !trace.html_message ? 'Trace in build' : trace.message,
             html: trace.message ? undefined : trace.html_message,
             filePath: trace.file && normalizePath(trace.file),
             severity: typeToSeverity(trace.type) || 'info',
