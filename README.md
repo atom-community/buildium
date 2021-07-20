@@ -5,7 +5,7 @@
 [![apm](https://flat.badgen.net/apm/license/buildium)](https://atom.io/packages/buildium)
 [![apm](https://flat.badgen.net/apm/v/buildium)](https://atom.io/packages/buildium)
 [![apm](https://flat.badgen.net/apm/dl/buildium)](https://atom.io/packages/buildium)
-[![GitHub Actions](https://badgen.net/github/checks/idleberg/atom-buildium)](https://github.com/idleberg/atom-buildium/actions)
+[![GitHub Actions](https://badgen.net/github/checks/idleberg/atom-buildium/master)](https://github.com/idleberg/atom-buildium/actions)
 [![David](https://flat.badgen.net/david/dep/idleberg/atom-buildium)](https://david-dm.org/idleberg/atom-buildium)
 
 This package is a fork of `build`, with a few key-differences:
