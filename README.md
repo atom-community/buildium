@@ -12,8 +12,8 @@ This package is a fork of `build`, with a few key-differences:
 
 - no user tracking
 - deferred package activation
-- support for JSON build-files with comments
-- support for TOML build-files
+- supports more build-files syntaxes
+- uses xterm.js for the terminal
 - improved visual integration
 - updated dependencies
 
