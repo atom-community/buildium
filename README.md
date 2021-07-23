@@ -13,7 +13,7 @@ This package is a fork of `build`, with a few key-differences:
 - no user tracking
 - deferred package activation
 - supports more build-files syntaxes
-- uses `xterm.js` for the terminal
+- uses `xterm.js` as terminal
 - improved visual integration
 - updated dependencies
 
