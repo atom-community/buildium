@@ -146,5 +146,5 @@ The following keybindings are for Windows and Linux, Mac should use <kbd>Cmd</kb
 This work is licensed under [The MIT License](https://opensource.org/licenses/MIT)
 
 [build-providers]: https://atombuild.github.io/
-[packages]: https://atom.io/packages/search?q=buildprovider
+[packages]: https://atom.io/packages/search?q=keyword:buildprovider
 [config-options]: https://github.com/noseglid/atom-build/blob/master/README.md#configuration-options
