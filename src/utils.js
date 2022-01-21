@@ -106,13 +106,13 @@ function getVersion() {
 function getBuildFilenames() {
   return [
     'package.json',
-    '.atom-build.cjs',
-    '.atom-build.js',
     '.atom-build.json',
-    '.atom-build.json5',
-    '.atom-build.toml',
     '.atom-build.yaml',
-    '.atom-build.yml'
+    '.atom-build.yml',
+    '.atom-build.json5',
+    '.atom-build.js',
+    '.atom-build.cjs',
+    '.atom-build.toml'
   ];
 }
 
