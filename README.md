@@ -69,13 +69,16 @@ This package provides services that ”build providers” can consume, it provid
 
 If no provider suits your specific needs, you can create a build file in your project folder. A variety of file formats is supported, they need to match any of the following names:
 
-- `.atom-build.cjs`
-- `.atom-build.js`
+- `package.json` with `buildium` object
 - `.atom-build.json`
-- `.atom-build.json5`
-- `.atom-build.toml`
 - `.atom-build.yaml`
 - `.atom-build.yml`
+- `.atom-build.json5`
+- `.atom-build.js`
+- `.atom-build.cjs`
+- `.atom-build.toml`
+
+**Note:** The configurations above are listed in order of precedence
 
 <details>
 <summary><strong>Example</strong></summary>️
