@@ -103,4 +103,17 @@ function getVersion() {
   return `v${version}`;
 }
 
-export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion };
+function getBuildFilenames() {
+  return [
+    'package.json',
+    '.atom-build.cjs',
+    '.atom-build.js',
+    '.atom-build.json',
+    '.atom-build.json5',
+    '.atom-build.toml',
+    '.atom-build.yaml',
+    '.atom-build.yml'
+  ];
+}
+
+export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, getBuildFilenames };
