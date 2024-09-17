@@ -18,6 +18,7 @@ import SaveConfirmView from './save-confirm-view';
 import StatusBarView from './status-bar-view';
 import TargetManager from './target-manager';
 import Tools from './atom-build';
+import { delimiter } from 'path';
 
 export default {
   config: Config.schema,
@@ -25,14 +26,12 @@ export default {
   activate() {
     DevConsole.log('Activating package');
 
-    if (!/^win/.test(process.platform)) {
-      // Manually append /usr/local/bin as it may not be set on some systems,
-      // and it's common to have node installed here. Keep it at end so it won't
-      // accidentially override any other node installation
+    // Manually append /usr/local/bin as it may not be set on some systems,
+    // and it's common to have node installed here. Keep it at end so it won't
+    // accidentially override any other node installation
 
-      // Note: This should probably be removed in a end-user friendly way...
-      process.env.PATH = (process.env.PATH ? process.env.PATH + ':' : '') + '/usr/local/bin';
-    }
+    // Note: This should probably be removed in a end-user friendly way...
+    process.env.PATH = [process.env.PATH, process.execPath].join(delimiter);
 
     atomPackageDeps.install(name);
 
