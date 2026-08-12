@@ -1,32 +1,28 @@
-import { View } from 'atom-space-pen-views';
+import { createStatusBarTile, type SvelteStatusBarResult } from '@children-of-atom/svelte-view';
 import Config from './config.ts';
+import StatusTile from './components/StatusTile.svelte';
+import { buildState } from './state.svelte.ts';
 import type { Disposable } from 'atom';
+import type { StatusBar } from '@pulsar-edit/types/status-bar';
 
-export type StatusBarService = {
-  addLeftTile(options: { item: unknown; priority?: number }): { destroy(): void };
-  addRightTile(options: { item: unknown; priority?: number }): { destroy(): void };
-};
+export type StatusBarService = StatusBar;
 
-export default class StatusBarView extends View {
+/**
+ * Controller for the status bar tile. What the tile displays lives in
+ * `state.svelte.ts`, so re-creating the tile on a config change — which is what
+ * `attach()` does — never loses the current target or build status.
+ */
+export default class StatusBarView {
   private statusBar: StatusBarService;
-  private statusBarTile: { destroy(): void } | null = null;
+  private tile: SvelteStatusBarResult | null = null;
   private tooltip: Disposable | null = null;
-  private target?: string;
   private clickCallback?: () => void;
 
-  constructor(statusBar: StatusBarService, ...args: unknown[]) {
-    super(...args);
-
+  constructor(statusBar: StatusBarService) {
     this.statusBar = statusBar;
 
     Config.observe('statusBar', () => this.attach());
     Config.observe('statusBarPriority', () => this.attach());
-  }
-
-  static content(): void {
-    this.div({ id: 'build-status-bar', class: 'inline-block' }, () => {
-      this.a({ click: 'clicked', outlet: 'message' });
-    });
   }
 
   attach(): void {
@@ -38,20 +34,31 @@ export default class StatusBarView extends View {
       return;
     }
 
-    this.statusBarTile = this.statusBar[`add${orientation}Tile`]({
-      item: this,
-      priority: Config.get('statusBarPriority')
-    });
+    this.tile = createStatusBarTile(
+      this.statusBar,
+      StatusTile,
+      { onclick: () => this.clicked() },
+      {
+        position: orientation === 'Left' ? 'left' : 'right',
+        priority: Config.get('statusBarPriority')
+      }
+    );
 
-    this.tooltip = atom.tooltips.add(this.element, {
-      title: () => this.tooltipMessage()
-    });
+    // The wrapper is `display: contents` and therefore has no box for the
+    // tooltip to anchor to; the component root does.
+    const root = this.tile.view.getElement().querySelector<HTMLElement>('#build-status-bar');
+
+    if (root) {
+      this.tooltip = atom.tooltips.add(root, {
+        title: () => this.tooltipMessage()
+      });
+    }
   }
 
   destroy(): void {
-    if (this.statusBarTile) {
-      this.statusBarTile.destroy();
-      this.statusBarTile = null;
+    if (this.tile) {
+      this.tile.dispose();
+      this.tile = null;
     }
 
     if (this.tooltip) {
@@ -61,22 +68,16 @@ export default class StatusBarView extends View {
   }
 
   tooltipMessage(): string {
-    return `Current build target is '${this.element.textContent}'`;
-  }
-
-  setClasses(classes?: string): void {
-    this.removeClass('status-unknown status-success status-error');
-    this.addClass(classes);
+    return `Current build target is '${buildState.target}'`;
   }
 
   setTarget(t: string): void {
-    if (this.target === t) {
+    if (buildState.target === t) {
       return;
     }
 
-    this.target = t;
-    this.message.text(t || '');
-    this.setClasses();
+    buildState.target = t || '';
+    buildState.status = 'idle';
   }
 
   buildAborted(): void {
@@ -84,11 +85,11 @@ export default class StatusBarView extends View {
   }
 
   setBuildSuccess(success: boolean): void {
-    this.setClasses(success ? 'status-success' : 'status-error');
+    buildState.status = success ? 'success' : 'error';
   }
 
   buildStarted(): void {
-    this.setClasses();
+    buildState.status = 'idle';
   }
 
   onClick(cb: () => void): void {

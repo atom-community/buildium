@@ -9,6 +9,15 @@ declare module 'atom' {
   export * from '@pulsar-edit/types';
 }
 
+/* `tsc` cannot parse components. Their internals — including prop types — are
+   checked by `svelte-check` instead; this only makes the imports resolvable. */
+declare module '*.svelte' {
+  import type { Component } from 'svelte';
+
+  const component: Component;
+  export default component;
+}
+
 declare module 'atom-space-pen-views' {
   /* Views are jQuery objects carrying dynamically generated outlets, so there
      is nothing meaningful to model here. */

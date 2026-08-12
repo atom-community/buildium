@@ -9,8 +9,9 @@
   "quoteProps": "consistent",
   "semi": true,
   "singleQuote": true,
+  "svelte": true,
   "tabWidth": 2,
   "trailingComma": "none",
   "useTabs": false,
-  "ignorePatterns": ["lib", "styles/xterm.css"]
+  "ignorePatterns": ["lib", "styles/xterm.css", ".vscode"]
 }

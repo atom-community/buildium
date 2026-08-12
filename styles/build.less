@@ -86,6 +86,16 @@
   }
 }
 
+// `SvelteView` mounts each component inside a wrapper element. That wrapper is
+// what gets handed to the status bar and to `addTopPanel`, so it must not take
+// part in layout — otherwise `#build-status-bar`'s `inline-block` and the
+// overlay's positioning would apply one level too deep. Scoped to this
+// package's own components; other packages share the element name.
+svelte-view-container:has(> #build-status-bar),
+svelte-view-container:has(> .build-confirm) {
+  display: contents;
+}
+
 .opaque-hover {
   transition: opacity 0.2s linear;
   opacity: 0.6;
