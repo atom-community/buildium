@@ -2,13 +2,12 @@ name: Build & test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -16,14 +15,16 @@ jobs:
         node-version: ['lts/*']
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setting up NodeJS ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run lint --if-present
-    - run: npm run build --if-present
-    - run: npm run test --if-present
-      env:
-        CI: true
+      - uses: actions/checkout@v4
+      - name: Setting up pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setting up NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint --if-present
+      - run: pnpm run build --if-present
+        env:
+          CI: true

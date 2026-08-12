@@ -23,9 +23,9 @@ ES6 class or an array of classes in return. The next section describes in detail
 expected to operate.
 
 ## The provider implementation
+
 ```javascript
 class MyBuildProvider {
-
   constructor(cwd) {
     // OPTIONAL: setup here
     // cwd is the project root this provider will operate in, so store `cwd` in `this`.
@@ -100,8 +100,9 @@ This includes the command, `cmd`, to execute, any arguments, `args`, and so on.
 tool provider should call the `callback` when the specified event occurs.
 The easiest way to use this is to extends [NodeJS's event emitter](https://nodejs.org/api/events.html#events_class_events_eventemitter) and simply issue `this.emit(event)`.
 Events `build` may ask for include:
-  * `refresh` - call the callback if you want `build` to refresh all targets.
-    this is common after the build file has been altered.
+
+- `refresh` - call the callback if you want `build` to refresh all targets.
+  this is common after the build file has been altered.
 
 Note: If you extend `EventEmitter` you don't need to implement this method.
 
@@ -121,13 +122,14 @@ from the `isEligible` method. Checks for eligibility should always be performed 
 the content of the project folder may have changed between two calls.
 
 `build` will refresh targets for a variety of events:
-  * Atom is started, `build` will instance one build provider for every project root
-    folder in Atom and ask for build targets.
-  * A project root folder is added, `build` will instance a new build provider for this
-    folder and ask for build targets.
-  * Any build provider emits the `refresh`, in which case all providers in that folder
-    will be asked for targets.
-  * The user (or any other package) issues `build:refresh-targets` (e.g. via the command palette).
+
+- Atom is started, `build` will instance one build provider for every project root
+  folder in Atom and ask for build targets.
+- A project root folder is added, `build` will instance a new build provider for this
+  folder and ask for build targets.
+- Any build provider emits the `refresh`, in which case all providers in that folder
+  will be asked for targets.
+- The user (or any other package) issues `build:refresh-targets` (e.g. via the command palette).
 
 ## Publication
 

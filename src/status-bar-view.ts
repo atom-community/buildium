@@ -1,18 +1,39 @@
 import { View } from 'atom-space-pen-views';
-import Config from './config';
+import Config from './config.ts';
+import type { Disposable } from 'atom';
+
+export type StatusBarService = {
+  addLeftTile(options: { item: unknown; priority?: number }): { destroy(): void };
+  addRightTile(options: { item: unknown; priority?: number }): { destroy(): void };
+};
 
 export default class StatusBarView extends View {
-  constructor(statusBar, ...args) {
+  private statusBar: StatusBarService;
+  private statusBarTile: { destroy(): void } | null = null;
+  private tooltip: Disposable | null = null;
+  private target?: string;
+  private clickCallback?: () => void;
+
+  constructor(statusBar: StatusBarService, ...args: unknown[]) {
     super(...args);
+
     this.statusBar = statusBar;
+
     Config.observe('statusBar', () => this.attach());
     Config.observe('statusBarPriority', () => this.attach());
   }
 
-  attach() {
+  static content(): void {
+    this.div({ id: 'build-status-bar', class: 'inline-block' }, () => {
+      this.a({ click: 'clicked', outlet: 'message' });
+    });
+  }
+
+  attach(): void {
     this.destroy();
 
     const orientation = Config.get('statusBar');
+
     if ('Disable' === orientation) {
       return;
     }
@@ -22,12 +43,12 @@ export default class StatusBarView extends View {
       priority: Config.get('statusBarPriority')
     });
 
-    this.tooltip = atom.tooltips.add(this, {
+    this.tooltip = atom.tooltips.add(this.element, {
       title: () => this.tooltipMessage()
     });
   }
 
-  destroy() {
+  destroy(): void {
     if (this.statusBarTile) {
       this.statusBarTile.destroy();
       this.statusBarTile = null;
@@ -39,22 +60,16 @@ export default class StatusBarView extends View {
     }
   }
 
-  static content() {
-    this.div({ id: 'build-status-bar', class: 'inline-block' }, () => {
-      this.a({ click: 'clicked', outlet: 'message' });
-    });
-  }
-
-  tooltipMessage() {
+  tooltipMessage(): string {
     return `Current build target is '${this.element.textContent}'`;
   }
 
-  setClasses(classes) {
+  setClasses(classes?: string): void {
     this.removeClass('status-unknown status-success status-error');
     this.addClass(classes);
   }
 
-  setTarget(t) {
+  setTarget(t: string): void {
     if (this.target === t) {
       return;
     }
@@ -64,23 +79,23 @@ export default class StatusBarView extends View {
     this.setClasses();
   }
 
-  buildAborted() {
+  buildAborted(): void {
     this.setBuildSuccess(false);
   }
 
-  setBuildSuccess(success) {
+  setBuildSuccess(success: boolean): void {
     this.setClasses(success ? 'status-success' : 'status-error');
   }
 
-  buildStarted() {
+  buildStarted(): void {
     this.setClasses();
   }
 
-  onClick(cb) {
-    this.onClick = cb;
+  onClick(cb: () => void): void {
+    this.clickCallback = cb;
   }
 
-  clicked() {
-    this.onClick && this.onClick();
+  clicked(): void {
+    this.clickCallback?.();
   }
 }

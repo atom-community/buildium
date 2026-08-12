@@ -9,82 +9,66 @@
     "make",
     "productivity"
   ],
-  "repository": "https://github.com/idleberg/atom-buildium",
   "license": "MIT",
+  "repository": "https://github.com/idleberg/atom-buildium",
   "main": "./lib/buildium",
   "scripts": {
-    "build": "npm run clean && rollup --config",
-    "dev": "npm run start",
-    "clean": "rimraf ./lib",
-    "format": "prettier --write ./src ./styles",
-    "lint:js": "eslint ./src --ignore-path .gitignore",
-    "lint:md": "remark . --quiet --frail --ignore-path .gitignore",
+    "build": "tsdown",
+    "dev": "pnpm run start",
+    "format": "oxfmt",
+    "lint:fmt": "oxfmt --check",
+    "lint:js": "oxlint",
+    "lint:types": "tsc --noEmit",
     "lint": "npm-run-all --parallel lint:*",
-    "start": "rollup --watch --config",
-    "test": "eslint .",
+    "start": "tsdown --watch",
+    "test": "pnpm run lint",
     "prepare": "husky install"
   },
-  "lint-staged": {
-    "*.js": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,less}": "prettier --write"
-  },
   "dependencies": {
-    "@atxm/developer-console": "^0.5.0",
     "@iarna/toml": "^2.2.5",
     "atom-package-deps": "^7.2.2",
     "atom-space-pen-views": "^2.0.3",
-    "core-js": "^3.15.2",
     "cosmiconfig": "^7.0.0",
     "cross-spawn": "^7.0.3",
     "cson-parser": "^4.0.8",
-    "js-yaml": "^4.0.0",
     "json5": "^2.2.0",
     "tree-kill": "^1.0.0",
     "xregexp": "^5.0.1",
     "xterm": "^2.9.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.3",
-    "@babel/eslint-parser": "^7.14.7",
-    "@babel/preset-env": "^7.14.7",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-commonjs": "^19.0.1",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.0.2",
-    "@stylelint/prettier-config": "^2.0.0",
-    "@stylelint/remark-preset": "^2.0.0",
-    "atom-build-spec-helpers": "^0.4.0",
-    "eslint": "^7.31.0",
+    "@pulsar-edit/types": "^1.132.0",
+    "@types/cross-spawn": "^6.0.6",
+    "@types/node": "^22.10.0",
     "husky": "^7.0.0",
-    "jsonlint": "^1.6.3",
     "lint-staged": "^11.0.1",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.3.2",
-    "remark-cli": "^9.0.0",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.53.2",
-    "rollup-plugin-terser": "^7.0.2",
-    "sass": "^1.35.2",
-    "stylelint": "^13.13.1",
-    "temp": "^0.9.4"
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "tsdown": "^0.22.14",
+    "typescript": "^5.9.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,svelte}": [
+      "oxlint --fix",
+      "oxfmt"
+    ],
+    "*.{json,md,css}": "oxfmt"
   },
   "engines": {
     "atom": ">=1.0.0"
   },
   "activationCommands": {
     "atom-workspace": [
-      "build:confirm",
-      "build:error-match-first",
-      "build:error-match",
-      "build:no-confirm",
-      "build:refresh-targets",
-      "build:select-active-target",
-      "build:stop",
-      "build:toggle-panel",
-      "build:trigger"
+      "buildium:confirm",
+      "buildium:error-match-first",
+      "buildium:error-match",
+      "buildium:no-confirm",
+      "buildium:refresh-targets",
+      "buildium:select-active-target",
+      "buildium:stop",
+      "buildium:toggle-panel",
+      "buildium:trigger"
     ]
   },
   "activationHooks": [

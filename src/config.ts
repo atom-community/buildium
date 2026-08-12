@@ -1,4 +1,37 @@
+import type { Disposable } from 'atom';
 import { name } from '../package.json';
+
+export type PanelVisibility = 'Toggle' | 'Keep Visible' | 'Show on Error' | 'Hidden';
+export type PanelOrientation = 'Bottom' | 'Top' | 'Left' | 'Right';
+export type StatusBarPlacement = 'Left' | 'Right' | 'Disable';
+
+/**
+ * Every key of the package's config schema, with the type its value resolves
+ * to. Keep in sync with `schema` below — the pair is the compatibility surface
+ * users' `config.cson` is written against.
+ */
+export type BuildiumConfig = {
+  panelVisibility: PanelVisibility;
+  autoToggleInterval: number;
+  buildOnSave: boolean;
+  saveOnBuild: boolean;
+  matchedErrorFailsBuild: boolean;
+  scrollOnError: boolean;
+  stealFocus: boolean;
+  selectTriggers: boolean;
+  refreshOnShowTargetList: boolean;
+  notificationOnRefresh: boolean;
+  beepWhenDone: boolean;
+  panelOrientation: PanelOrientation;
+  statusBar: StatusBarPlacement;
+  statusBarPriority: number;
+  terminalScrollback: number;
+  muteConflictWarning: boolean;
+};
+
+export type ConfigKey = keyof BuildiumConfig;
+
+type ObserveCallback<K extends ConfigKey> = (value: BuildiumConfig[K]) => void;
 
 export default {
   schema: {
@@ -120,22 +153,26 @@ export default {
     }
   },
 
-  get(key = '') {
-    return key?.length ? atom.config.get(`${name}.${key}`) : atom.config.get(`${name}`);
+  get<K extends ConfigKey>(key: K): BuildiumConfig[K] {
+    return atom.config.get(`${name}.${key}`) as BuildiumConfig[K];
   },
 
-  set(key, value) {
+  getAll(): BuildiumConfig {
+    return atom.config.get(name) as BuildiumConfig;
+  },
+
+  set<K extends ConfigKey>(key: K, value: BuildiumConfig[K]): void {
     atom.config.set(`${name}.${key}`, value);
   },
 
-  migrate(oldKey, newKey) {
+  migrate(oldKey: string, newKey: string): void {
     if (!atom.config.get(`${name}.${oldKey}`) || atom.config.get(`${name}.${newKey}`)) {
       return;
     }
 
     try {
       atom.config.set(`${name}.${newKey}`, atom.config.get(`${name}.${oldKey}`));
-    } catch (error) {
+    } catch {
       atom.notifications.addWarning(`Failed to migrate configuration, see console for details`);
 
       return;
@@ -144,40 +181,21 @@ export default {
     atom.config.unset(`${name}.${oldKey}`);
   },
 
-  observe(...args) {
-    let key, options, callback;
-
-    switch (args.length) {
-      case 2:
-        [key, callback] = args;
-        options = {};
-        break;
-
-      case 3:
-        [keyPath, options, callback] = args;
-        break;
-
-      default:
-        console.error('An unsupported form of Config::observe is being used. See https://atom.io/docs/api/latest/Config for details');
-        return;
-    }
-
-    atom.config.observe(`${name}.${key}`, options, callback);
+  observe<K extends ConfigKey>(key: K, callback: ObserveCallback<K>): Disposable {
+    return atom.config.observe(`${name}.${key}` as string, callback as (value: unknown) => void);
   },
 
-  unset(key = '') {
-    const unsetKey = key?.length ? `${name}.${key}` : name;
+  unset(key = ''): void {
+    const unsetKey = key.length ? `${name}.${key}` : name;
 
     atom.config.unset(unsetKey);
   },
 
-  open(options = {}) {
-    options = {
+  open(options: object = {}): void {
+    atom.workspace.open(`atom://config/packages/${name}`, {
       pending: true,
       searchAllPanes: true,
       ...options
-    };
-
-    atom.workspace.open(`atom://config/packages/${name}`, options);
+    });
   }
 };

@@ -1,7 +1,14 @@
 import { View } from 'atom-space-pen-views';
+import type { Panel } from 'atom';
+
+export type SaveConfirmCallback = (save: boolean) => void;
 
 export default class SaveConfirmView extends View {
-  static content() {
+  private confirmcb?: SaveConfirmCallback;
+  private cancelcb?: () => void;
+  private panel: Panel | null = null;
+
+  static content(): void {
     this.div({ class: 'build-confirm overlay from-top' }, () => {
       this.h3('You have unsaved changes');
       this.div({ class: 'btn-container pull-right' }, () => {
@@ -29,43 +36,50 @@ export default class SaveConfirmView extends View {
     });
   }
 
-  destroy() {
+  destroy(): void {
     this.confirmcb = undefined;
     this.cancelcb = undefined;
+
     if (this.panel) {
       this.panel.destroy();
       this.panel = null;
     }
   }
 
-  show(confirmcb, cancelcb) {
+  show(confirmcb: SaveConfirmCallback, cancelcb?: () => void): void {
     this.confirmcb = confirmcb;
     this.cancelcb = cancelcb;
 
     this.panel = atom.workspace.addTopPanel({
       item: this
     });
+
     this.saveBuildButton.focus();
   }
 
-  cancel() {
+  cancel(): void {
+    const cancelcb = this.cancelcb;
+
     this.destroy();
-    if (this.cancelcb) {
-      this.cancelcb();
+
+    if (cancelcb) {
+      cancelcb();
     }
   }
 
-  saveAndConfirm() {
+  saveAndConfirm(): void {
     if (this.confirmcb) {
       this.confirmcb(true);
     }
+
     this.destroy();
   }
 
-  confirmWithoutSave() {
+  confirmWithoutSave(): void {
     if (this.confirmcb) {
       this.confirmcb(false);
     }
+
     this.destroy();
   }
 }

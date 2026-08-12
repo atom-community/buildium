@@ -1,0 +1,136 @@
+import fs from 'fs';
+import path from 'path';
+import { name, version } from '../package.json';
+import type { BuildTarget, ResolvedBuildTarget } from './types.ts';
+
+const genName = (base: string, index: number) => `${base} - ${index}`;
+
+function uniquifySettings<T extends BuildTarget>(settings: T[]): T[] {
+  const newSettings: T[] = [];
+
+  settings.forEach((setting) => {
+    let i = 0;
+    let testName = setting.name;
+
+    while (newSettings.find((ns) => ns.name === testName)) {
+      testName = genName(setting.name, ++i);
+    }
+
+    newSettings.push({ ...setting, name: testName });
+  });
+
+  return newSettings;
+}
+
+function activePath(): string | false | undefined {
+  const textEditor = atom.workspace.getActiveTextEditor();
+
+  if (!textEditor || !textEditor.getPath()) {
+    /* default to building the first one if no editor is active */
+    if (0 === atom.project.getPaths().length) {
+      return false;
+    }
+
+    return atom.project.getPaths()[0];
+  }
+
+  /* otherwise, build the one in the root of the active editor */
+  return atom.project
+    .getPaths()
+    .toSorted((a, b) => b.length - a.length)
+    .find((p) => {
+      try {
+        const realpath = fs.realpathSync(p);
+        return fs.realpathSync(textEditor.getPath() as string).substr(0, realpath.length) === realpath;
+      } catch {
+        /* Path no longer available. Possible network volume has gone down */
+        return false;
+      }
+    });
+}
+
+function getDefaultSettings(cwd: string, setting: BuildTarget): ResolvedBuildTarget {
+  return {
+    ...setting,
+    env: setting.env || {},
+    args: setting.args || [],
+    cwd: setting.cwd || cwd,
+    sh: undefined === setting.sh ? true : setting.sh,
+    errorMatch: setting.errorMatch || ''
+  };
+}
+
+function replace(value: string | undefined = '', targetEnv?: Record<string, string>): string {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  const env: Record<string, string | undefined> = { ...process.env, ...targetEnv };
+
+  let result = value.replace(/\$(\w+)/g, (match, variable: string) => (variable in env ? (env[variable] as string) : match));
+
+  const editor = atom.workspace.getActiveTextEditor();
+
+  const projectPaths = atom.project.getPaths().map((projectPath) => {
+    try {
+      return fs.realpathSync(projectPath);
+    } catch {
+      /* Path no longer available. Possibly a network volume has gone down. */
+      return null;
+    }
+  });
+
+  let projectPath = projectPaths[0];
+  const editorPath = editor?.getPath();
+
+  if (editor && editorPath) {
+    const activeFile = fs.realpathSync(editorPath);
+    const activeFilePath = path.dirname(activeFile);
+
+    projectPath = projectPaths.find((p) => p !== null && activeFilePath.startsWith(p)) ?? projectPath;
+
+    const cursorScreenPosition = editor.getCursorScreenPosition();
+
+    result = result
+      .replace(/{FILE_ACTIVE}/g, activeFile)
+      .replace(/{FILE_ACTIVE_PATH}/g, activeFilePath)
+      .replace(/{FILE_ACTIVE_NAME}/g, path.basename(activeFile))
+      .replace(/{FILE_ACTIVE_NAME_BASE}/g, path.basename(activeFile, path.extname(activeFile)))
+      .replace(/{SELECTION}/g, editor.getSelectedText())
+      .replace(/{FILE_ACTIVE_CURSOR_ROW}/g, String(cursorScreenPosition.row + 1))
+      .replace(/{FILE_ACTIVE_CURSOR_COLUMN}/g, String(cursorScreenPosition.column + 1));
+  }
+
+  result = result.replace(/{PROJECT_PATH}/g, projectPath ?? '');
+
+  const repository = atom.project.getRepositories()[0];
+
+  if (repository) {
+    result = result.replace(/{REPO_BRANCH_SHORT}/g, repository.getShortHead());
+  }
+
+  return result;
+}
+
+function capitalizedName(): string {
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+}
+
+function getVersion(): string {
+  return `v${version}`;
+}
+
+function getBuildFilenames(): string[] {
+  return [
+    'package.json',
+    '.atom-build.json',
+    '.atom-build.yaml',
+    '.atom-build.yml',
+    '.atom-build.json5',
+    '.atom-build.js',
+    '.atom-build.cjs',
+    '.atom-build.toml'
+  ];
+}
+
+export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, getBuildFilenames };

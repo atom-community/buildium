@@ -1,42 +1,61 @@
-import 'core-js';
-import 'regenerator-runtime/runtime';
-
 import { Disposable } from 'atom';
-import { spawn } from 'child_process';
-import * as atomPackageDeps from 'atom-package-deps';
-import * as Utils from './utils';
-import BuildError from './build-error';
-import BuildView from './build-view';
-import Config from './config';
+import { spawn, type ChildProcess } from 'child_process';
 import crossSpawn from 'cross-spawn';
-import DevConsole from './log';
-import ErrorMatcher from './error-matcher';
+import * as atomPackageDeps from 'atom-package-deps';
 import kill from 'tree-kill';
-import Linter from './linter-integration';
+import * as Utils from './utils.ts';
+import BuildError from './build-error.ts';
+import BuildView from './build-view.ts';
+import Config from './config.ts';
+import DevConsole from './log.ts';
+import ErrorMatcher from './error-matcher.ts';
+import Linter, { type LinterRegistry } from './linter-integration.ts';
+import SaveConfirmView from './save-confirm-view.ts';
+import StatusBarView, { type StatusBarService } from './status-bar-view.ts';
+import TargetManager from './target-manager.ts';
+import Tools from './atom-build.ts';
 import { name } from '../package.json';
-import SaveConfirmView from './save-confirm-view';
-import StatusBarView from './status-bar-view';
-import TargetManager from './target-manager';
-import Tools from './atom-build';
+import type { TextEditor } from 'atom';
+import type { BuildProviderConstructor, BusyProvider, ResolvedBuildTarget } from './types.ts';
+
+type BuildSource = 'trigger' | 'save';
+
+/** A `child_process` handle plus the bookkeeping buildium hangs off it. */
+type BuildChildProcess = ChildProcess & {
+  killSignals: NodeJS.Signals[];
+  killed: boolean;
+};
 
 export default {
   config: Config.schema,
 
-  activate() {
+  tools: [] as BuildProviderConstructor[],
+  targetManager: null as unknown as TargetManager,
+  buildView: null as unknown as BuildView,
+  errorMatcher: null as unknown as ErrorMatcher,
+  linter: null as Linter | null,
+  statusBarView: null as StatusBarView | null,
+  saveConfirmView: null as SaveConfirmView | null,
+  busyProvider: null as BusyProvider | null,
+  child: null as BuildChildProcess | null,
+  nextBuild: null as (() => void) | null,
+  finishedTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+
+  activate(): void {
     DevConsole.log('Activating package');
 
-    if (!/^win/.test(process.platform)) {
+    if (!process.platform.startsWith('win')) {
       // Manually append /usr/local/bin as it may not be set on some systems,
       // and it's common to have node installed here. Keep it at end so it won't
       // accidentially override any other node installation
 
       // Note: This should probably be removed in a end-user friendly way...
-      process.env.PATH = (process.env.PATH ? process.env.PATH + ':' : '') + '/usr/local/bin';
+      process.env.PATH = (process.env.PATH ? `${process.env.PATH}:` : '') + '/usr/local/bin';
     }
 
     atomPackageDeps.install(name);
 
-    this.tools = [Tools];
+    this.tools = [Tools as unknown as BuildProviderConstructor];
     this.linter = null;
 
     this.setupTargetManager();
@@ -46,12 +65,10 @@ export default {
     atom.commands.add('atom-workspace', 'buildium:trigger', () => this.build('trigger'));
     atom.commands.add('atom-workspace', 'buildium:stop', () => this.stop());
     atom.commands.add('atom-workspace', 'buildium:confirm', () => {
-      document.activeElement.click();
+      (document.activeElement as HTMLElement | null)?.click();
     });
     atom.commands.add('atom-workspace', 'buildium:no-confirm', () => {
-      if (this.saveConfirmView) {
-        this.saveConfirmView.cancel();
-      }
+      this.saveConfirmView?.cancel();
     });
 
     atom.workspace.observeTextEditors((editor) => {
@@ -70,38 +87,43 @@ export default {
     }
 
     document.body.style.setProperty('--buildium-terminal-font-family', atom.config.get('editor.fontFamily'));
-    document.body.style.setProperty('--buildium-terminal-font-size', atom.config.get('editor.fontSize'));
+    document.body.style.setProperty('--buildium-terminal-font-size', String(atom.config.get('editor.fontSize')));
 
     atom.config.onDidChange('editor.fontFamily', ({ newValue }) => {
-      document.body.style.setProperty('--buildium-terminal-font-family', newValue);
+      document.body.style.setProperty('--buildium-terminal-font-family', String(newValue));
     });
 
     atom.config.onDidChange('editor.fontSize', ({ newValue }) => {
-      document.body.style.setProperty('--buildium-terminal-font-size', newValue);
+      document.body.style.setProperty('--buildium-terminal-font-size', String(newValue));
     });
   },
 
-  setupTargetManager() {
+  setupTargetManager(): void {
     this.targetManager = new TargetManager();
     this.targetManager.setTools(this.tools);
+
     this.targetManager.on('refresh-complete', () => {
       this.updateStatusBar();
     });
+
     this.targetManager.once('refresh-complete', () => {
       DevConsole.log('First refresh complete');
+
       atom.packages.onDidActivatePackage((e) => {
-        if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
+        if (e.name.startsWith('build-') && (e as { mainModule?: { provideBuilder?: unknown } }).mainModule?.provideBuilder) {
           DevConsole.log('Activating', e.name);
           this.targetManager.refreshTargets();
         }
       });
+
       atom.packages.onDidDeactivatePackage((e) => {
-        if (e.name.startsWith('build-') && e.mainModule.provideBuilder) {
+        if (e.name.startsWith('build-') && (e as { mainModule?: { provideBuilder?: unknown } }).mainModule?.provideBuilder) {
           DevConsole.log('Deactivating', e.name);
           this.targetManager.refreshTargets();
         }
       });
     });
+
     this.targetManager.on('new-active-target', () => {
       this.updateStatusBar();
 
@@ -109,79 +131,86 @@ export default {
         this.build('trigger');
       }
     });
-    this.targetManager.on('trigger', (atomCommandName) => this.build('trigger', atomCommandName));
+
+    this.targetManager.on('trigger', (event: Event) => this.build('trigger', event));
   },
 
-  setupBuildView() {
+  setupBuildView(): void {
     this.buildView = new BuildView();
   },
 
-  setupErrorMatcher() {
+  setupErrorMatcher(): void {
     this.errorMatcher = new ErrorMatcher();
-    this.errorMatcher.on('error', (message) => {
+
+    this.errorMatcher.on('error', (message: string) => {
       atom.notifications.addError('Error matching failed!', {
         detail: message
       });
     });
-    this.errorMatcher.on('matched', (match) => {
-      match[0] && this.buildView.scrollTo(match[0]);
+
+    this.errorMatcher.on('matched', (match: string[]) => {
+      if (match[0]) {
+        this.buildView.scrollTo(match[0]);
+      }
     });
   },
 
-  deactivate() {
+  deactivate(): void {
     DevConsole.log('Deactivating package');
 
     if (this.child) {
       this.child.removeAllListeners();
-      kill(this.child.pid, 'SIGKILL');
+      kill(this.child.pid as number, 'SIGKILL');
       this.child = null;
     }
 
-    this.statusBarView && this.statusBarView.destroy();
-    this.buildView && this.buildView.destroy();
-    this.saveConfirmView && this.saveConfirmView.destroy();
-    this.linter && this.linter.destroy();
+    this.statusBarView?.destroy();
+    this.buildView?.destroy();
+    this.saveConfirmView?.destroy();
+    this.linter?.destroy();
     this.targetManager.destroy();
 
     clearTimeout(this.finishedTimer);
   },
 
-  updateStatusBar() {
+  updateStatusBar(): void {
     const path = Utils.activePath();
     const activeTarget = this.targetManager.getActiveTarget(path);
-    this.statusBarView && activeTarget && this.statusBarView.setTarget(activeTarget.name);
+
+    if (this.statusBarView && activeTarget) {
+      this.statusBarView.setTarget(activeTarget.name);
+    }
   },
 
-  startNewBuild(source, atomCommandName) {
+  startNewBuild(source: BuildSource, atomCommandName: string | null): void {
     const path = Utils.activePath();
     let buildTitle = '';
-    this.linter && this.linter.clear();
 
-    Promise.resolve(this.targetManager.getTargets(path))
+    this.linter?.clear();
+
+    Promise.resolve(path ? this.targetManager.getTargets(path) : [])
       .then((targets) => {
         if (!targets || 0 === targets.length) {
           throw new BuildError('No eligible build target.', 'No configuration to build this project exists.');
         }
 
-        let target = targets.find((t) => t.atomCommandName === atomCommandName);
-        if (!target) {
-          target = this.targetManager.getActiveTarget(path);
-        }
+        const target = targets.find((t) => t.atomCommandName === atomCommandName) ?? this.targetManager.getActiveTarget(path);
 
-        if (!target.exec) {
+        if (!target?.exec) {
           throw new BuildError('Invalid build file.', 'No executable command specified.');
         }
 
-        this.statusBarView && this.statusBarView.buildStarted();
-        this.busyProvider && this.busyProvider.add(`${Utils.capitalizedName()}: ${target.name}`);
+        this.statusBarView?.buildStarted();
+        this.busyProvider?.add(`${Utils.capitalizedName()}: ${target.name}`);
         this.buildView.buildStarted();
         this.buildView.setHeading('Running preBuild...');
 
         return Promise.resolve(target.preBuild ? target.preBuild() : null).then(() => target);
       })
-      .then((target) => {
+      .then((target: ResolvedBuildTarget) => {
         const replace = Utils.replace;
-        const env = Object.assign({}, process.env, target.env);
+        const env: Record<string, string> = { ...process.env, ...target.env } as Record<string, string>;
+
         Object.keys(env).forEach((key) => {
           env[key] = replace(env[key], target.env);
         });
@@ -197,31 +226,35 @@ export default {
         buildTitle = [target.sh ? `${shCmd} ${shCmdArg} ${exec}` : exec, ...args, '\n'].join(' ');
 
         this.buildView.setHeading(buildTitle);
-        if (target.sh) {
-          this.child = spawn(shCmd, [shCmdArg, [exec].concat(args).join(' ')], {
-            cwd: cwd,
-            env: env,
-            stdio: ['ignore', null, null]
-          });
-        } else {
-          this.child = crossSpawn(exec, args, {
-            cwd: cwd,
-            env: env,
-            stdio: ['ignore', null, null]
-          });
-        }
+
+        const child = (
+          target.sh
+            ? spawn(shCmd, [shCmdArg, [exec].concat(args).join(' ')], {
+                cwd: cwd,
+                env: env,
+                stdio: ['ignore', null, null]
+              })
+            : crossSpawn(exec, args, {
+                cwd: cwd,
+                env: env,
+                stdio: ['ignore', null, null]
+              })
+        ) as BuildChildProcess;
+
+        this.child = child;
 
         let stdout = '';
         let stderr = '';
-        this.child.stdout.setEncoding('utf8');
-        this.child.stderr.setEncoding('utf8');
-        this.child.stdout.on('data', (d) => (stdout += d));
-        this.child.stderr.on('data', (d) => (stderr += d));
-        this.child.stdout.pipe(this.buildView.terminal);
-        this.child.stderr.pipe(this.buildView.terminal);
-        this.child.killSignals = (target.killSignals || ['SIGINT', 'SIGTERM', 'SIGKILL']).slice();
 
-        this.child.on('error', (err) => {
+        child.stdout?.setEncoding('utf8');
+        child.stderr?.setEncoding('utf8');
+        child.stdout?.on('data', (d: string) => (stdout += d));
+        child.stderr?.on('data', (d: string) => (stderr += d));
+        child.stdout?.pipe(this.buildView.terminal as unknown as NodeJS.WritableStream);
+        child.stderr?.pipe(this.buildView.terminal as unknown as NodeJS.WritableStream);
+        child.killSignals = (target.killSignals || ['SIGINT', 'SIGTERM', 'SIGKILL']).slice();
+
+        child.on('error', (err: NodeJS.ErrnoException) => {
           this.buildView.terminal.write((target.sh ? 'Unable to execute with shell: ' : 'Unable to execute: ') + exec + '\n');
 
           if (/\s/.test(exec) && !target.sh) {
@@ -234,44 +267,45 @@ export default {
           }
         });
 
-        this.child.on('close', (exitCode) => {
+        child.on('close', (exitCode) => {
           this.child = null;
           this.errorMatcher.set(target, cwd, stdout + stderr);
 
           let success = 0 === exitCode;
+
           if (Config.get('matchedErrorFailsBuild')) {
-            success = success && !this.errorMatcher.getMatches().some((match) => match.type && match.type.toLowerCase() === 'error');
+            success = success && !this.errorMatcher.getMatches().some((match) => match.type?.toLowerCase() === 'error');
           }
 
-          this.linter && this.linter.processMessages(this.errorMatcher.getMatches(), cwd);
+          this.linter?.processMessages(this.errorMatcher.getMatches(), cwd);
 
           if (Config.get('beepWhenDone')) {
             atom.beep();
           }
 
           this.buildView.setHeading('Running postBuild...');
+
           return Promise.resolve(target.postBuild ? target.postBuild(success, stdout, stderr) : null).then(() => {
             this.buildView.setHeading(buildTitle);
 
-            this.busyProvider && this.busyProvider.remove(`${Utils.capitalizedName()}: ${target.name}`, success);
+            this.busyProvider?.remove(`${Utils.capitalizedName()}: ${target.name}`, success);
             this.buildView.buildFinished(success);
-            this.statusBarView && this.statusBarView.setBuildSuccess(success);
+            this.statusBarView?.setBuildSuccess(success);
+
             if (success) {
               this.finishedTimer = setTimeout(() => {
                 this.buildView.detach();
               }, Config.get('autoToggleInterval'));
-            } else {
-              if (Config.get('scrollOnError')) {
-                this.errorMatcher.matchFirst();
-              }
+            } else if (Config.get('scrollOnError')) {
+              this.errorMatcher.matchFirst();
             }
 
-            this.nextBuild && this.nextBuild();
+            this.nextBuild?.();
             this.nextBuild = null;
           });
         });
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         if (err instanceof BuildError) {
           if (source === 'save') {
             // If there is no eligible build tool, and cause of build was a save, stay quiet.
@@ -281,7 +315,7 @@ export default {
           atom.notifications.addWarning(err.name, {
             detail: err.message,
             stack: err.stack
-          });
+          } as NotificationOptions);
         } else {
           atom.notifications.addError('Failed to build.', {
             detail: err.message,
@@ -291,44 +325,46 @@ export default {
       });
   },
 
-  sendNextSignal() {
+  sendNextSignal(): void {
     try {
-      const signal = this.child.killSignals.shift();
-      kill(this.child.pid, signal);
-    } catch (e) {
+      const signal = this.child?.killSignals.shift();
+      kill(this.child?.pid as number, signal);
+    } catch {
       /* Something may have happened to the child (e.g. terminated by itself). Ignore this. */
     }
   },
 
-  abort(cb) {
-    if (!this.child.killed) {
+  abort(cb?: () => void): void {
+    if (this.child && !this.child.killed) {
       this.buildView.buildAbortInitiated();
       this.child.killed = true;
       this.child.on('exit', () => {
         this.child = null;
-        cb && cb();
+        cb?.();
       });
     }
 
     this.sendNextSignal();
   },
 
-  build(source, event) {
+  build(source: BuildSource, event?: Event): void {
     clearTimeout(this.finishedTimer);
 
     this.doSaveConfirm(this.unsavedTextEditors(), () => {
       const nextBuild = this.startNewBuild.bind(this, source, event ? event.type : null);
+
       if (this.child) {
         this.nextBuild = nextBuild;
         return this.abort();
       }
+
       return nextBuild();
     });
   },
 
-  doSaveConfirm(modifiedTextEditors, continuecb, cancelcb) {
-    const saveAndContinue = (save) => {
-      modifiedTextEditors.map((textEditor) => save && textEditor.save());
+  doSaveConfirm(modifiedTextEditors: TextEditor[], continuecb: () => void, cancelcb?: () => void): void {
+    const saveAndContinue = (save: boolean) => {
+      modifiedTextEditors.forEach((textEditor) => save && textEditor.save());
       continuecb();
     };
 
@@ -337,34 +373,33 @@ export default {
       return;
     }
 
-    if (this.saveConfirmView) {
-      this.saveConfirmView.destroy();
-    }
+    this.saveConfirmView?.destroy();
 
     this.saveConfirmView = new SaveConfirmView();
     this.saveConfirmView.show(saveAndContinue, cancelcb);
   },
 
-  unsavedTextEditors() {
+  unsavedTextEditors(): TextEditor[] {
     return atom.workspace.getTextEditors().filter((textEditor) => {
       return textEditor.isModified() && undefined !== textEditor.getPath();
     });
   },
 
-  stop() {
+  stop(): void {
     this.nextBuild = null;
     clearTimeout(this.finishedTimer);
+
     if (this.child) {
       this.abort(() => {
         this.buildView.buildAborted();
-        this.statusBarView && this.statusBarView.buildAborted();
+        this.statusBarView?.buildAborted();
       });
     } else {
       this.buildView.reset();
     }
   },
 
-  disableBuild() {
+  disableBuild(): void {
     const notification = atom.notifications.addWarning("In order to avoid conflicts, it's recommended to disable (or remove) the original `build` package", {
       dismissable: true,
       buttons: [
@@ -387,26 +422,28 @@ export default {
     });
   },
 
-  consumeLinterRegistry(registry) {
+  consumeLinterRegistry(registry: LinterRegistry): void {
     DevConsole.log('Consuming linter');
 
-    this.linter && this.linter.destroy();
+    this.linter?.destroy();
     this.linter = new Linter(registry);
   },
 
-  consumeBuilder(builder) {
+  consumeBuilder(builder: BuildProviderConstructor | BuildProviderConstructor[]): Disposable {
     DevConsole.log('Consuming builder');
 
     if (Array.isArray(builder)) this.tools.push(...builder);
     else this.tools.push(builder);
+
     this.targetManager.setTools(this.tools);
+
     return new Disposable(() => {
       this.tools = this.tools.filter(Array.isArray(builder) ? (tool) => builder.indexOf(tool) === -1 : (tool) => tool !== builder);
       this.targetManager.setTools(this.tools);
     });
   },
 
-  consumeStatusBar(statusBar) {
+  consumeStatusBar(statusBar: StatusBarService): void {
     DevConsole.log('Consuming status-bar');
 
     this.statusBarView = new StatusBarView(statusBar);
@@ -415,7 +452,7 @@ export default {
     this.targetManager.refreshTargets();
   },
 
-  consumeBusySignal(registry) {
+  consumeBusySignal(registry: { create(): BusyProvider }): void {
     DevConsole.log('Consuming busy-signal');
 
     this.busyProvider = registry.create();

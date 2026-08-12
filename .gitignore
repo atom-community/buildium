@@ -2,15 +2,15 @@
 bower_components/
 node_modules/
 npm-debug.log*
+package-lock.json
 shrinkwrap.yaml
 vendor/
 yarn-error.log
 yarn.lock
 
 # Development Files
-.eslintcache
-*.d.ts
 *.map
+*.tsbuildinfo
 
 # Project-specific
 todo.md

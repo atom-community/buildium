@@ -1,5 +1,7 @@
 import { name } from '../package.json';
 
+type ConsoleMethod = 'debug' | 'error' | 'info' | 'log' | 'trace' | 'warn';
+
 const styleSheet = `
   background-color: darkslateblue;
   border-radius: 2px;
@@ -9,7 +11,7 @@ const styleSheet = `
   text-shadow: 0 1px 0px rgba(0, 0, 0, 0.2);
 `;
 
-function __console__(type, ...args) {
+function __console__(type: ConsoleMethod, ...args: unknown[]): void {
   if (!atom?.inDevMode()) return;
 
   args.unshift(`%c${name}%c`, styleSheet, '');
@@ -17,27 +19,27 @@ function __console__(type, ...args) {
 }
 
 export default {
-  debug(...data) {
+  debug(...data: unknown[]): void {
     __console__('debug', ...data);
   },
 
-  error(...data) {
+  error(...data: unknown[]): void {
     __console__('error', ...data);
   },
 
-  info(...data) {
+  info(...data: unknown[]): void {
     __console__('info', ...data);
   },
 
-  log(...data) {
+  log(...data: unknown[]): void {
     __console__('log', ...data);
   },
 
-  trace(...data) {
+  trace(...data: unknown[]): void {
     __console__('trace', ...data);
   },
 
-  warn(...data) {
+  warn(...data: unknown[]): void {
     __console__('warn', ...data);
   }
 };
