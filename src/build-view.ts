@@ -1,26 +1,24 @@
-import { View, $ } from 'atom-space-pen-views';
-import Terminal from 'xterm';
+import { View } from 'atom-space-pen-views';
+import { FitAddon } from '@xterm/addon-fit';
+import { Terminal } from '@xterm/xterm';
 import Config from './config.ts';
 import { capitalizedName, getVersion } from './utils.ts';
 import type { Panel } from 'atom';
 import type { PanelOrientation } from './config.ts';
 
-type FontGeometry = {
-  w: number;
-  h: number;
-};
+/** Height the terminal falls back to when it can't be measured, in pixels. */
+const DEFAULT_TERMINAL_HEIGHT = 150;
 
 export default class BuildView extends View {
   terminal!: Terminal;
 
   private starttime = new Date();
-  private fontGeometry: FontGeometry = { w: 15, h: 15 };
-  /** jQuery wrapper around the xterm element; untyped along with space-pen. */
-  private terminalEl: any;
-  private destroyTerminal!: () => void;
+  private fitAddon!: FitAddon;
+  private resizeObserver!: ResizeObserver;
+  /** The element xterm renders into, i.e. `div.xterm`. */
+  private terminalEl!: HTMLElement;
   private panel: Panel | null = null;
   private titleTimer: ReturnType<typeof setTimeout> | 0 = 0;
-  private detectResizeInterval?: ReturnType<typeof setInterval>;
 
   static initialTimerText(): string {
     return '0.000 s';
@@ -76,32 +74,21 @@ export default class BuildView extends View {
     this.terminal = new Terminal({
       cursorBlink: false,
       convertEol: true,
-      useFocus: false,
-      termName: 'xterm-256color',
       scrollback: Config.get('terminalScrollback')
     });
 
-    // On some systems, prependListener and prependOnceListener is expected to exist. Add them until terminal replacement is here.
-    this.terminal.prependListener = (...a: [string, (...args: unknown[]) => void]) => {
-      this.terminal.on(...a);
-    };
-    this.terminal.prependOnceListener = (...a: [string, (...args: unknown[]) => void]) => {
-      this.terminal.addOnceListener(...a);
-    };
-
-    this.terminal.getContent = function (this: Terminal) {
-      return this.lines.reduce((m1, line) => {
-        return m1 + line.reduce((m2, col) => m2 + col[1], '') + '\n';
-      }, '');
-    };
+    this.fitAddon = new FitAddon();
+    this.terminal.loadAddon(this.fitAddon);
 
     this.terminal.open(this.output[0]);
-    this.destroyTerminal = this.terminal.destroy.bind(this);
-    // This terminal will be open forever and reset when necessary
-    this.terminal.destroy = this.terminal.destroySoon = () => {};
 
-    this.terminalEl = $(this.terminal.element);
-    this.terminalEl[0].terminal = this.terminal; // For testing purposes
+    this.terminalEl = this.terminal.element as HTMLElement;
+    this.terminalEl.style.height = `${DEFAULT_TERMINAL_HEIGHT}px`;
+
+    // xterm only reflows when it is told to; the panel is resized by the user,
+    // by the workspace and by orientation changes alike.
+    this.resizeObserver = new ResizeObserver(() => this.fit());
+    this.resizeObserver.observe(this.output[0]);
 
     this.resizeStarted = this.resizeStarted.bind(this);
     this.resizeMoved = this.resizeMoved.bind(this);
@@ -115,8 +102,17 @@ export default class BuildView extends View {
   }
 
   destroy(): void {
-    this.destroyTerminal();
-    clearInterval(this.detectResizeInterval);
+    this.resizeObserver.disconnect();
+    this.terminal.dispose();
+  }
+
+  /** Reflows the terminal to the size of its container. No-op while detached. */
+  fit(): void {
+    try {
+      this.fitAddon.fit();
+    } catch {
+      /* `fit()` throws while the terminal has no measurable dimensions, i.e. whenever the panel is detached. */
+    }
   }
 
   resizeStarted(): void {
@@ -126,26 +122,14 @@ export default class BuildView extends View {
   }
 
   resizeMoved(ev: MouseEvent): void {
-    const { h } = this.fontGeometry;
-
     switch (Config.get('panelOrientation')) {
-      case 'Bottom': {
-        const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
-        if (Math.abs(delta) < (h * 5) / 6) return;
-
-        const nearestRowHeight = Math.round((this.terminalEl.height() + delta) / h) * h;
-        const maxHeight = $('.item-views').height() + $('.build .output').height();
-        this.terminalEl.css('height', `${Math.min(maxHeight, nearestRowHeight)}px`);
-        break;
-      }
-
+      case 'Bottom':
       case 'Top': {
+        const isBottom = Config.get('panelOrientation') === 'Bottom';
         const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
-        if (Math.abs(delta) < (h * 5) / 6) return;
+        const height = this.terminalEl.getBoundingClientRect().height + (isBottom ? delta : -delta);
 
-        const nearestRowHeight = Math.round((this.terminalEl.height() - delta) / h) * h;
-        const maxHeight = $('.item-views').height() + $('.build .output').height();
-        this.terminalEl.css('height', `${Math.min(maxHeight, nearestRowHeight)}px`);
+        this.terminalEl.style.height = `${Math.max(0, Math.min(this.maxTerminalHeight(), height))}px`;
         break;
       }
 
@@ -162,7 +146,7 @@ export default class BuildView extends View {
       }
     }
 
-    this.resizeTerminal();
+    this.fit();
   }
 
   resizeEnded(): void {
@@ -171,40 +155,23 @@ export default class BuildView extends View {
     document.removeEventListener('mouseup', this.resizeEnded);
   }
 
-  resizeToNearestRow(): void {
-    if (-1 !== ['Top', 'Bottom'].indexOf(Config.get('panelOrientation'))) {
-      this.fixTerminalElHeight();
-    }
+  /** The panel may not grow past the editor it shares the window with. */
+  private maxTerminalHeight(): number {
+    const itemViews = document.querySelector('.item-views');
+    const output = this.output.get(0) as HTMLElement;
 
-    this.resizeTerminal();
-  }
-
-  getFontGeometry(): FontGeometry {
-    const o = $('<div>A</div>').addClass('terminal').addClass('terminal-test').appendTo(this.output);
-    const w = o[0].getBoundingClientRect().width;
-    const h = o[0].getBoundingClientRect().height;
-    o.remove();
-
-    return { w, h };
-  }
-
-  resizeTerminal(): void {
-    this.fontGeometry = this.getFontGeometry();
-
-    const { w, h } = this.fontGeometry;
-
-    if (0 === w || 0 === h) {
-      return;
-    }
-
-    const terminalWidth = Math.floor(this.terminalEl.width() / w);
-    const terminalHeight = Math.floor(this.terminalEl.height() / h);
-
-    this.terminal.resize(terminalWidth, terminalHeight);
+    return (itemViews?.getBoundingClientRect().height ?? 0) + output.getBoundingClientRect().height;
   }
 
   getContent(): string {
-    return this.terminal.getContent();
+    const buffer = this.terminal.buffer.active;
+    let content = '';
+
+    for (let i = 0; i < buffer.length; i++) {
+      content += `${buffer.getLine(i)?.translateToString(true) ?? ''}\n`;
+    }
+
+    return content;
   }
 
   attach(force = false): void {
@@ -230,13 +197,7 @@ export default class BuildView extends View {
     const orientation = Config.get('panelOrientation') || 'Bottom';
 
     this.panel = addfn[orientation].call(atom.workspace, { item: this });
-    this.fixTerminalElHeight();
-    this.resizeToNearestRow();
-  }
-
-  fixTerminalElHeight(): void {
-    const nearestRowHeight = $('.build .output').height();
-    this.terminalEl.css('height', `${nearestRowHeight}px`);
+    this.fit();
   }
 
   detach(force = false): void {
@@ -258,7 +219,7 @@ export default class BuildView extends View {
     switch (val) {
       case 'Toggle':
       case 'Show on Error':
-        if (!this.terminalEl.hasClass('error')) {
+        if (!this.terminalEl.classList.contains('error')) {
           this.detach();
         }
         return;
@@ -277,32 +238,38 @@ export default class BuildView extends View {
     }
 
     this.resizer.get(0).removeEventListener('mousedown', this.resizeStarted);
+    this.resizer.get(0).addEventListener('mousedown', this.resizeStarted);
 
     switch (orientation) {
       case 'Top':
       case 'Bottom':
         this.get(0).style.width = null;
-        this.resizer.get(0).addEventListener('mousedown', this.resizeStarted);
+        this.terminalEl.style.height = `${DEFAULT_TERMINAL_HEIGHT}px`;
         break;
 
       case 'Left':
       case 'Right':
-        this.terminalEl.get(0).style.height = null;
-        this.resizer.get(0).addEventListener('mousedown', this.resizeStarted);
+        this.terminalEl.style.height = '';
         break;
     }
 
-    this.resizeTerminal();
+    this.fit();
   }
 
   fontSizeFromConfig(size: number): void {
     this.css({ 'font-size': size });
-    this.resizeToNearestRow();
+    this.terminal.options.fontSize = size;
+    this.fit();
   }
 
   fontFamilyFromConfig(family: string): void {
     this.css({ 'font-family': family });
-    this.resizeToNearestRow();
+
+    if (family) {
+      this.terminal.options.fontFamily = family;
+    }
+
+    this.fit();
   }
 
   reset(): void {
@@ -341,6 +308,10 @@ export default class BuildView extends View {
 
   build(): void {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'buildium:trigger');
+  }
+
+  write(data: string): void {
+    this.terminal.write(data);
   }
 
   setHeading(heading: string): void {
@@ -402,7 +373,6 @@ export default class BuildView extends View {
 
     const row = content.slice(0, endPos).split('\n').length;
 
-    this.terminal.ydisp = 0;
-    this.terminal.scrollDisp(row - 1);
+    this.terminal.scrollToLine(row - 1);
   }
 }

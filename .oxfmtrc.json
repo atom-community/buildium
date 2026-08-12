@@ -12,5 +12,5 @@
   "tabWidth": 2,
   "trailingComma": "none",
   "useTabs": false,
-  "ignorePatterns": ["lib"]
+  "ignorePatterns": ["lib", "styles/xterm.css"]
 }

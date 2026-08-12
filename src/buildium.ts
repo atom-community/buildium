@@ -85,17 +85,6 @@ export default {
     if (!Config.get('muteConflictWarning') && atom.packages.isPackageActive('build')) {
       this.disableBuild();
     }
-
-    document.body.style.setProperty('--buildium-terminal-font-family', atom.config.get('editor.fontFamily'));
-    document.body.style.setProperty('--buildium-terminal-font-size', String(atom.config.get('editor.fontSize')));
-
-    atom.config.onDidChange('editor.fontFamily', ({ newValue }) => {
-      document.body.style.setProperty('--buildium-terminal-font-family', String(newValue));
-    });
-
-    atom.config.onDidChange('editor.fontSize', ({ newValue }) => {
-      document.body.style.setProperty('--buildium-terminal-font-size', String(newValue));
-    });
   },
 
   setupTargetManager(): void {
@@ -248,22 +237,26 @@ export default {
 
         child.stdout?.setEncoding('utf8');
         child.stderr?.setEncoding('utf8');
-        child.stdout?.on('data', (d: string) => (stdout += d));
-        child.stderr?.on('data', (d: string) => (stderr += d));
-        child.stdout?.pipe(this.buildView.terminal as unknown as NodeJS.WritableStream);
-        child.stderr?.pipe(this.buildView.terminal as unknown as NodeJS.WritableStream);
+        child.stdout?.on('data', (d: string) => {
+          stdout += d;
+          this.buildView.write(d);
+        });
+        child.stderr?.on('data', (d: string) => {
+          stderr += d;
+          this.buildView.write(d);
+        });
         child.killSignals = (target.killSignals || ['SIGINT', 'SIGTERM', 'SIGKILL']).slice();
 
         child.on('error', (err: NodeJS.ErrnoException) => {
-          this.buildView.terminal.write((target.sh ? 'Unable to execute with shell: ' : 'Unable to execute: ') + exec + '\n');
+          this.buildView.write((target.sh ? 'Unable to execute with shell: ' : 'Unable to execute: ') + exec + '\n');
 
           if (/\s/.test(exec) && !target.sh) {
-            this.buildView.terminal.write('`cmd` cannot contain space. Use `args` for arguments.\n');
+            this.buildView.write('`cmd` cannot contain space. Use `args` for arguments.\n');
           }
 
           if ('ENOENT' === err.code) {
-            this.buildView.terminal.write(`Make sure cmd:'${exec}' and cwd:'${cwd}' exists and have correct access permissions.\n`);
-            this.buildView.terminal.write(`Binaries are found in these folders: ${process.env.PATH}\n`);
+            this.buildView.write(`Make sure cmd:'${exec}' and cwd:'${cwd}' exists and have correct access permissions.\n`);
+            this.buildView.write(`Binaries are found in these folders: ${process.env.PATH}\n`);
           }
         });
 

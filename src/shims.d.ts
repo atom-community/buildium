@@ -1,8 +1,8 @@
 /**
  * Ambient declarations for untyped runtime dependencies.
  *
- * `atom-space-pen-views` and `xterm@2` are deliberately typed loosely — both
- * are scheduled for removal and there is no value in modelling them properly.
+ * `atom-space-pen-views` is deliberately typed loosely — it is scheduled for
+ * removal and there is no value in modelling it properly.
  */
 
 declare module 'atom' {
@@ -17,42 +17,6 @@ declare module 'atom-space-pen-views' {
   export const View: SpacePenView;
   export const SelectListView: SpacePenView;
   export const $: any;
-}
-
-declare module 'xterm' {
-  type TerminalOptions = {
-    cursorBlink?: boolean;
-    convertEol?: boolean;
-    useFocus?: boolean;
-    termName?: string;
-    scrollback?: number;
-  };
-
-  export default class Terminal {
-    constructor(options?: TerminalOptions);
-
-    element: HTMLElement;
-    lines: Array<Array<[unknown, string]>>;
-    ydisp: number;
-
-    open(parent: HTMLElement): void;
-    write(data: string): void;
-    reset(): void;
-    resize(columns: number, rows: number): void;
-    destroy(): void;
-    scrollDisp(rows: number): void;
-
-    on(event: string, listener: (...args: unknown[]) => void): void;
-    addOnceListener(event: string, listener: (...args: unknown[]) => void): void;
-
-    // Added by `BuildView`
-    getContent(): string;
-    prependListener(event: string, listener: (...args: unknown[]) => void): void;
-    prependOnceListener(event: string, listener: (...args: unknown[]) => void): void;
-    destroySoon(): void;
-
-    [key: string]: unknown;
-  }
 }
 
 declare module 'cson-parser' {

@@ -66,46 +66,22 @@
     background-color: @input-background-color;
     padding: @component-padding;
 
+    // xterm derives its own metrics from the `fontFamily`/`fontSize` options,
+    // so this must not restyle the terminal's text.
     .terminal {
       padding: 0;
       margin: 0;
       height: 100%;
       width: 100%;
-      font-weight: normal;
-      font-family: var(--buildium-terminal-font-family, monospace);
-      font-size: var(--buildium-terminal-font-size);
-      > div {
-        white-space: nowrap;
-        font-size: inherit;
-      }
-      ::selection {
-        background-color: @background-color-info;
-        color: @text-color-highlight;
-      }
     }
 
-    .terminal-test {
-      background-color: none;
-      position: absolute;
-      float: left;
-      visibility: hidden;
-      height: auto !important;
-      width: auto !important;
-      white-space: nowrap;
-      border: none;
-    }
-  }
-
-  .xterm {
     .xterm-viewport {
       background-color: inherit;
-      width: 100%;
-      height: 100%;
-      position: absolute;
     }
 
-    .xterm-helpers {
-      display: none;
+    ::selection {
+      background-color: @background-color-info;
+      color: @text-color-highlight;
     }
   }
 }

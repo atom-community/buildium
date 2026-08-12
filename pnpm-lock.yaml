@@ -11,6 +11,12 @@ importers:
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
+      '@xterm/addon-fit':
+        specifier: ^0.11.0
+        version: 0.11.0
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
       atom-package-deps:
         specifier: ^7.2.2
         version: 7.2.3
@@ -35,9 +41,6 @@ importers:
       xregexp:
         specifier: ^5.0.1
         version: 5.1.2
-      xterm:
-        specifier: ^2.9.2
-        version: 2.9.2
     devDependencies:
       '@pulsar-edit/types':
         specifier: ^1.132.0
@@ -427,6 +430,12 @@ packages:
 
   '@types/semver@5.5.0':
     resolution: {integrity: sha512-41qEJgBH/TWgo5NFSvBCJ1qkoi3Q6ONSF2avrHq1LVEZfYpdHmj0y9SuTK+u9ZhG1sYQKBL1AWXKyLWP4RaUoQ==}
+
+  '@xterm/addon-fit@0.11.0':
+    resolution: {integrity: sha512-jYcgT6xtVYhnhgxh3QgYDnnNMYTcf8ElbxxFzX0IZo+vabQqSPAjC3c1wJrKB5E19VwQei89QCiZZP86DCPF7g==}
+
+  '@xterm/xterm@6.0.0':
+    resolution: {integrity: sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==}
 
   '@yuku-codegen/binding-android-arm64@0.8.5':
     resolution: {integrity: sha512-+oEBxK35kdbskhxozjZhI8N6qrMOfphpIkXnqBj6N2DC08rdkg10MUMRNKZLBNU6uNyoYiLcLyCE6aFV2sfMKw==}
@@ -1663,10 +1672,6 @@ packages:
   xregexp@5.1.2:
     resolution: {integrity: sha512-6hGgEMCGhqCTFEJbqmWrNIPqfpdirdGWkqshu7fFZddmTSfgv5Sn9D2SaKloR79s5VUiUlpwzg3CM3G6D3VIlw==}
 
-  xterm@2.9.2:
-    resolution: {integrity: sha512-mdfPk9nY6WmKkMDIZUL6xVIpJoP6JLv3mQ2hA490e2DboUlTWt2f60cTnTT20ZYFU11mx9OgVCcqhDI7vOAQ5Q==}
-    deprecated: This package is now deprecated. Move to @xterm/xterm instead.
-
   yaml@1.10.3:
     resolution: {integrity: sha512-vIYeF1u3CjlhAFekPPAk2h/Kv4T3mAkMox5OymRiJQB0spDP10LHvt+K7G9Ny6NuuMAb25/6n1qyUjAcGNf/AA==}
     engines: {node: '>= 6'}
@@ -1880,6 +1885,10 @@ snapshots:
   '@types/parse-json@4.0.2': {}
 
   '@types/semver@5.5.0': {}
+
+  '@xterm/addon-fit@0.11.0': {}
+
+  '@xterm/xterm@6.0.0': {}
 
   '@yuku-codegen/binding-android-arm64@0.8.5':
     optional: true
@@ -3262,8 +3271,6 @@ snapshots:
   xregexp@5.1.2:
     dependencies:
       '@babel/runtime-corejs3': 7.29.7
-
-  xterm@2.9.2: {}
 
   yaml@1.10.3: {}
 
