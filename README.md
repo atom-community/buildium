@@ -2,11 +2,9 @@
 
 > Build your current project, directly from Atom
 
-[![apm](https://flat.badgen.net/apm/license/buildium)](https://atom.io/packages/buildium)
-[![apm](https://flat.badgen.net/apm/v/buildium)](https://atom.io/packages/buildium)
-[![apm](https://flat.badgen.net/apm/dl/buildium)](https://atom.io/packages/buildium)
-[![GitHub Actions](https://flat.badgen.net/github/checks/idleberg/atom-buildium/master)](https://github.com/idleberg/atom-buildium/actions)
-[![David](https://flat.badgen.net/david/dep/idleberg/atom-buildium)](https://david-dm.org/idleberg/atom-buildium)
+[![License](https://img.shields.io/github/license/atom-community/buildium?color=blue&style=for-the-badge)](https://github.com/atom-community/buildium/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/v/release/atom-community/buildium?style=for-the-badge)](https://github.com/atom-community/buildium/releases)
+[![Downloads](https://img.shields.io/pulsar/dt/language-nsis?style=for-the-badge&color=slateblue)](https://web.pulsar-edit.dev/packages/language-nsis)
 
 This package is a fork of `build`, with a few key-differences:
 
