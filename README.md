@@ -13,6 +13,8 @@ This package is a fork of `build`, with a few key-differences:
 - supports more build-files syntaxes
 - uses `xterm.js` as terminal
 - improved visual integration
+- written in TypeScript
+- Svelte UI
 - updated dependencies
 
 ## Installation
