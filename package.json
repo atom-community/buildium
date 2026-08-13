@@ -1,7 +1,7 @@
 {
   "name": "buildium",
   "version": "0.76.1",
-  "description": "Build your current project, directly from Atom",
+  "description": "Build your current project, directly from Pulsar",
   "keywords": [
     "build",
     "compile",
@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "repository": "https://github.com/idleberg/atom-buildium",
-  "main": "./lib/buildium",
+  "main": "./lib/buildium.js",
   "scripts": {
     "build": "tsdown",
     "dev": "npm run start",
