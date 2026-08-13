@@ -1,4 +1,4 @@
-import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
+import { cosmiconfig } from 'cosmiconfig';
 import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
@@ -7,16 +7,26 @@ import loaders from './loaders.ts';
 import pkg from '../package.json';
 import type { BuildFileTarget, BuildTarget } from './types.ts';
 
-const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'cson', 'toml', 'yaml', 'yml'];
+const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'cson', 'toml', 'yaml', 'yml'];
 
 const explorer = cosmiconfig(pkg.name, {
-  searchPlaces: ['.atom-build.cjs', '.atom-build.js', '.atom-build.json', '.atom-build.json5', '.atom-build.toml', '.atom-build.yaml', '.atom-build.yml'],
+  searchPlaces: [
+    '.atom-build.cjs',
+    '.atom-build.js',
+    '.atom-build.json',
+    '.atom-build.json5',
+    '.atom-build.jsonc',
+    '.atom-build.toml',
+    '.atom-build.yaml',
+    '.atom-build.yml'
+  ],
   loaders: {
     '.cson': loaders.cson,
     '.toml': loaders.toml,
-    '.json': loaders.json5,
+    '.json': loaders.jsonc,
     '.json5': loaders.json5,
-    'noExt': defaultLoaders['.json']
+    '.jsonc': loaders.jsonc,
+    'noExt': loaders.jsonc
   }
 });
 
