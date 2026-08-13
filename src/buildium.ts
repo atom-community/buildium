@@ -39,7 +39,6 @@ export default {
   busyProvider: null as BusyProvider | null,
   child: null as BuildChildProcess | null,
   nextBuild: null as (() => void) | null,
-  finishedTimer: undefined as ReturnType<typeof setTimeout> | undefined,
 
   activate(): void {
     DevConsole.log('Activating package');
@@ -158,8 +157,6 @@ export default {
     this.saveConfirmView?.destroy();
     this.linter?.destroy();
     this.targetManager.destroy();
-
-    clearTimeout(this.finishedTimer);
   },
 
   updateStatusBar(): void {
@@ -285,11 +282,9 @@ export default {
             this.buildView.buildFinished(success);
             this.statusBarView?.setBuildSuccess(success);
 
-            if (success) {
-              this.finishedTimer = setTimeout(() => {
-                this.buildView.detach();
-              }, Config.get('autoToggleInterval'));
-            } else if (Config.get('scrollOnError')) {
+            // The panel stays open after a successful build; it is closed by the
+            // user, by the next build's `reset()` or by `buildium:toggle-panel`.
+            if (!success && Config.get('scrollOnError')) {
               this.errorMatcher.matchFirst();
             }
 
@@ -341,8 +336,6 @@ export default {
   },
 
   build(source: BuildSource, event?: Event): void {
-    clearTimeout(this.finishedTimer);
-
     this.doSaveConfirm(this.unsavedTextEditors(), () => {
       const nextBuild = this.startNewBuild.bind(this, source, event ? event.type : null);
 
@@ -380,7 +373,6 @@ export default {
 
   stop(): void {
     this.nextBuild = null;
-    clearTimeout(this.finishedTimer);
 
     if (this.child) {
       this.abort(() => {

@@ -1,0 +1,140 @@
+@import 'ui-variables';
+
+.build {
+  min-width: 250px;
+  font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  font-size: @font-size;
+
+  // xterm colours its own glyphs from `Terminal.options.theme`, out of reach of
+  // any stylesheet. These carry the theme's values to `terminal-theme.ts`, which
+  // reads them off the computed style — so the terminal and the panel around it
+  // are declared from one place, here.
+  --buildium-terminal-foreground: @text-color;
+  --buildium-terminal-background: @input-background-color;
+  --buildium-terminal-cursor: @text-color-highlight;
+  --buildium-terminal-cursor-accent: @input-background-color;
+  --buildium-terminal-selection: @background-color-info;
+
+  .resizer {
+    opacity: 0;
+    position: absolute;
+    border: solid 4px @base-border-color;
+  }
+
+  .heading {
+    -webkit-user-select: none;
+    font-family: system-ui;
+    font-size: @font-size;
+    line-height: 3em;
+    padding: 0 5px;
+    border-left: 5px solid;
+    border-color: @text-color-subtle;
+
+    &.success {
+      border-color: @text-color-success;
+    }
+
+    &.error {
+      border-color: @text-color-error;
+    }
+
+    .heading-text {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      &::before {
+        margin-right: 5px;
+        color: @text-color-error;
+      }
+    }
+
+    .control-container {
+      float: right;
+      margin-left: @component-padding;
+
+      .title {
+        float: left;
+
+        .build-timer {
+          margin-right: @component-padding;
+        }
+
+        &.error {
+          color: @text-color-error;
+        }
+
+        &.success {
+          color: @text-color-success;
+        }
+      }
+    }
+  }
+
+  .output {
+    color: @text-color;
+    background-color: @input-background-color;
+    padding: @component-padding;
+
+    // xterm derives its own metrics from the `fontFamily`/`fontSize` options,
+    // so this must not restyle the terminal's text.
+    .terminal {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    .xterm-viewport {
+      background-color: inherit;
+    }
+
+    ::selection {
+      background-color: @background-color-info;
+      color: @text-color-highlight;
+    }
+  }
+}
+
+// `SvelteView` mounts each component inside a wrapper element. That wrapper is
+// what gets handed to the status bar and to `addTopPanel`, so it must not take
+// part in layout — otherwise `#build-status-bar`'s `inline-block` and the
+// overlay's positioning would apply one level too deep. Scoped to this
+// package's own components; other packages share the element name.
+svelte-view-container:has(> #build-status-bar),
+svelte-view-container:has(> .build-confirm),
+svelte-view-container:has(> .build.tool-panel) {
+  display: contents;
+}
+
+// The target picker is the one wrapper that must keep its box. Themes paint the
+// modal's opaque background as `atom-panel.modal::before` and lift the panel's
+// *direct children* above it with `& > * { position: relative }` (one-dark-ui's
+// `modal.less`, commented "fixes stacking order"). `display: contents` erases
+// this wrapper, so nothing in the picker gets lifted: `ol.list-group` carries
+// its own `position: relative` from core's `select-list.less` and stays visible,
+// but the query input paints *under* the backdrop — focusable and typeable, yet
+// invisible. A real, positioned box here is what the theme expects to find.
+svelte-view-container:has(> .select-list.build-target) {
+  display: block;
+  position: relative;
+}
+
+.opaque-hover {
+  transition: opacity 0.2s linear;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+#build-status-bar {
+  &.status-success > a {
+    color: @text-color-success;
+  }
+
+  &.status-error > a {
+    color: @text-color-error;
+  }
+}

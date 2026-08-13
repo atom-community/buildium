@@ -12,7 +12,6 @@ export type StatusBarPlacement = 'Left' | 'Right' | 'Disable';
  */
 export type BuildiumConfig = {
   panelVisibility: PanelVisibility;
-  autoToggleInterval: number;
   buildOnSave: boolean;
   saveOnBuild: boolean;
   matchedErrorFailsBuild: boolean;
@@ -42,14 +41,6 @@ export default {
       default: 'Toggle',
       enum: ['Toggle', 'Keep Visible', 'Show on Error', 'Hidden'],
       order: 1
-    },
-    autoToggleInterval: {
-      title: 'Auto-toggle Interval',
-      description: 'Set the interval until the panel closes automatically, in milliseconds. This setting works with *Panel Visibility* set to *Toggle*',
-      type: 'integer',
-      minimum: 1000,
-      default: 3000,
-      order: 2
     },
     buildOnSave: {
       title: 'Automatically build on save',

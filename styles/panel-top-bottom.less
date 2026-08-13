@@ -1,0 +1,27 @@
+atom-panel.top .build,
+atom-panel.bottom .build {
+  .resizer {
+    cursor: row-resize;
+    width: 100%;
+  }
+
+  // xterm 6 puts both `terminal` and `xterm` on its root element, so this still
+  // matches. It is also what `DEFAULT_TERMINAL_HEIGHT` in `BuildPanel.svelte`
+  // writes inline — the inline style wins, and this is the theme-visible
+  // declaration of the same default.
+  .terminal {
+    height: 150px;
+  }
+}
+
+atom-panel.top .build {
+  .resizer {
+    bottom: 0;
+  }
+}
+
+atom-panel.bottom .build {
+  .resizer {
+    top: 0;
+  }
+}

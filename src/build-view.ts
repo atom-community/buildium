@@ -1,24 +1,36 @@
-import { View } from 'atom-space-pen-views';
-import { FitAddon } from '@xterm/addon-fit';
+import { SvelteView } from '@children-of-atom/svelte-view';
 import { Terminal } from '@xterm/xterm';
+import BuildPanel from './components/BuildPanel.svelte';
 import Config from './config.ts';
+import { addXtermStyleSheet } from './xterm-styles.ts';
 import { capitalizedName, getVersion } from './utils.ts';
-import type { Panel } from 'atom';
+import type { BuildPanelProps } from './components/BuildPanel.types.ts';
+import type { BuildStatus } from './state.svelte.ts';
+import type { Disposable, Panel } from 'atom';
 import type { PanelOrientation } from './config.ts';
 
-/** Height the terminal falls back to when it can't be measured, in pixels. */
-const DEFAULT_TERMINAL_HEIGHT = 150;
+/**
+ * Controller for the build panel.
+ *
+ * The markup, the resizer and the terminal's layout live in
+ * `BuildPanel.svelte`; this owns the panel's lifecycle, the config
+ * subscriptions and the `Terminal` instance that `buildium.ts` writes to. Every
+ * public method is one the orchestrator already called, so the switch away from
+ * `atom-space-pen-views` is invisible to it.
+ *
+ * The view is created once and outlives every attach/detach: only the `Panel`
+ * is destroyed when the panel is toggled or re-docked, so the terminal's
+ * scrollback survives exactly as it did before.
+ */
+export default class BuildView {
+  terminal: Terminal;
 
-export default class BuildView extends View {
-  terminal!: Terminal;
-
-  private starttime = new Date();
-  private fitAddon!: FitAddon;
-  private resizeObserver!: ResizeObserver;
-  /** The element xterm renders into, i.e. `div.xterm`. */
-  private terminalEl!: HTMLElement;
+  private view: SvelteView<BuildPanelProps>;
+  private styles: Disposable;
   private panel: Panel | null = null;
+  private starttime = new Date();
   private titleTimer: ReturnType<typeof setTimeout> | 0 = 0;
+  private outcome: BuildStatus = 'idle';
 
   static initialTimerText(): string {
     return '0.000 s';
@@ -28,48 +40,8 @@ export default class BuildView extends View {
     return `${capitalizedName()} ${getVersion()}`;
   }
 
-  static content(): void {
-    this.div({ tabIndex: -1, class: 'build tool-panel native-key-bindings' }, () => {
-      this.div({ class: 'heading', outlet: 'panelHeading' }, () => {
-        this.div({ class: 'control-container' }, () => {
-          this.button(
-            {
-              class: 'btn btn-default icon icon-zap',
-              click: 'build',
-              title: 'Builds current project'
-            },
-            'Build'
-          );
-          this.button(
-            {
-              class: 'btn btn-default icon icon-trashcan',
-              click: 'clearOutput',
-              title: 'Clears the output'
-            },
-            'Clear'
-          );
-          this.button(
-            {
-              class: 'btn btn-default icon icon-x',
-              click: 'close',
-              title: 'Closes the build panel'
-            },
-            'Close'
-          );
-          this.div({ class: 'title', outlet: 'title' }, () => {
-            this.span({ class: 'build-timer', outlet: 'buildTimer' }, this.initialTimerText());
-          });
-        });
-        this.div({ class: 'icon heading-text text-highlight', outlet: 'heading' }, this.initialHeadingText());
-      });
-
-      this.div({ class: 'output panel-body', outlet: 'output' });
-      this.div({ class: 'resizer', outlet: 'resizer' });
-    });
-  }
-
-  constructor(...args: unknown[]) {
-    super(...args);
+  constructor() {
+    this.styles = addXtermStyleSheet();
 
     this.terminal = new Terminal({
       cursorBlink: false,
@@ -77,22 +49,19 @@ export default class BuildView extends View {
       scrollback: Config.get('terminalScrollback')
     });
 
-    this.fitAddon = new FitAddon();
-    this.terminal.loadAddon(this.fitAddon);
-
-    this.terminal.open(this.output[0]);
-
-    this.terminalEl = this.terminal.element as HTMLElement;
-    this.terminalEl.style.height = `${DEFAULT_TERMINAL_HEIGHT}px`;
-
-    // xterm only reflows when it is told to; the panel is resized by the user,
-    // by the workspace and by orientation changes alike.
-    this.resizeObserver = new ResizeObserver(() => this.fit());
-    this.resizeObserver.observe(this.output[0]);
-
-    this.resizeStarted = this.resizeStarted.bind(this);
-    this.resizeMoved = this.resizeMoved.bind(this);
-    this.resizeEnded = this.resizeEnded.bind(this);
+    this.view = new SvelteView<BuildPanelProps>(BuildPanel, {
+      terminal: this.terminal,
+      heading: BuildView.initialHeadingText(),
+      timer: BuildView.initialTimerText(),
+      outcome: 'idle',
+      aborting: false,
+      orientation: Config.get('panelOrientation') || 'Bottom',
+      fontSize: atom.config.get('editor.fontSize') as number,
+      fontFamily: (atom.config.get('editor.fontFamily') as string) || '',
+      onBuild: () => this.build(),
+      onClear: () => this.clearOutput(),
+      onClose: () => this.close()
+    });
 
     Config.observe('panelVisibility', this.visibleFromConfig.bind(this));
     Config.observe('panelOrientation', this.orientationFromConfig.bind(this));
@@ -102,65 +71,15 @@ export default class BuildView extends View {
   }
 
   destroy(): void {
-    this.resizeObserver.disconnect();
+    this.detach(true);
+    this.view.destroy();
     this.terminal.dispose();
+    this.styles.dispose();
   }
 
-  /** Reflows the terminal to the size of its container. No-op while detached. */
-  fit(): void {
-    try {
-      this.fitAddon.fit();
-    } catch {
-      /* `fit()` throws while the terminal has no measurable dimensions, i.e. whenever the panel is detached. */
-    }
-  }
-
-  resizeStarted(): void {
-    document.body.style.setProperty('-webkit-user-select', 'none');
-    document.addEventListener('mousemove', this.resizeMoved);
-    document.addEventListener('mouseup', this.resizeEnded);
-  }
-
-  resizeMoved(ev: MouseEvent): void {
-    switch (Config.get('panelOrientation')) {
-      case 'Bottom':
-      case 'Top': {
-        const isBottom = Config.get('panelOrientation') === 'Bottom';
-        const delta = this.resizer.get(0).getBoundingClientRect().top - ev.y;
-        const height = this.terminalEl.getBoundingClientRect().height + (isBottom ? delta : -delta);
-
-        this.terminalEl.style.height = `${Math.max(0, Math.min(this.maxTerminalHeight(), height))}px`;
-        break;
-      }
-
-      case 'Left': {
-        const delta = this.resizer.get(0).getBoundingClientRect().right - ev.x;
-        this.css('width', `${this.width() - delta - this.resizer.outerWidth()}px`);
-        break;
-      }
-
-      case 'Right': {
-        const delta = this.resizer.get(0).getBoundingClientRect().left - ev.x;
-        this.css('width', `${this.width() + delta}px`);
-        break;
-      }
-    }
-
-    this.fit();
-  }
-
-  resizeEnded(): void {
-    document.body.style.setProperty('-webkit-user-select', 'text');
-    document.removeEventListener('mousemove', this.resizeMoved);
-    document.removeEventListener('mouseup', this.resizeEnded);
-  }
-
-  /** The panel may not grow past the editor it shares the window with. */
-  private maxTerminalHeight(): number {
-    const itemViews = document.querySelector('.item-views');
-    const output = this.output.get(0) as HTMLElement;
-
-    return (itemViews?.getBoundingClientRect().height ?? 0) + output.getBoundingClientRect().height;
+  /** The component's root, i.e. `div.build` — not the `<svelte-view-container>` wrapper. */
+  private getPanelElement(): HTMLElement | null {
+    return this.view.getElement().querySelector<HTMLElement>('.build');
   }
 
   getContent(): string {
@@ -196,12 +115,13 @@ export default class BuildView extends View {
 
     const orientation = Config.get('panelOrientation') || 'Bottom';
 
-    this.panel = addfn[orientation].call(atom.workspace, { item: this });
-    this.fit();
+    this.panel = addfn[orientation].call(atom.workspace, { item: this.view });
   }
 
   detach(force = false): void {
-    if (atom.views.getView(atom.workspace) && document.activeElement === this[0]) {
+    const element = this.getPanelElement();
+
+    if (atom.views.getView(atom.workspace) && element && document.activeElement === element) {
       atom.views.getView(atom.workspace).focus();
     }
 
@@ -219,9 +139,11 @@ export default class BuildView extends View {
     switch (val) {
       case 'Toggle':
       case 'Show on Error':
-        if (!this.terminalEl.classList.contains('error')) {
-          this.detach();
-        }
+        // The original guarded this with a check for an `error` class on the
+        // terminal element, which nothing ever sets — so the panel was always
+        // detached here. Reproduced rather than corrected, since correcting it
+        // would change when the panel stays open.
+        this.detach();
         return;
     }
 
@@ -229,64 +151,43 @@ export default class BuildView extends View {
   }
 
   orientationFromConfig(orientation: PanelOrientation): void {
-    const isVisible = this.isVisible();
+    const wasAttached = this.isAttached();
 
     this.detach(true);
 
-    if (isVisible) {
+    if (wasAttached) {
       this.attach();
     }
 
-    this.resizer.get(0).removeEventListener('mousedown', this.resizeStarted);
-    this.resizer.get(0).addEventListener('mousedown', this.resizeStarted);
-
-    switch (orientation) {
-      case 'Top':
-      case 'Bottom':
-        this.get(0).style.width = null;
-        this.terminalEl.style.height = `${DEFAULT_TERMINAL_HEIGHT}px`;
-        break;
-
-      case 'Left':
-      case 'Right':
-        this.terminalEl.style.height = '';
-        break;
-    }
-
-    this.fit();
+    // The component resets its own inline sizing off this prop.
+    this.view.updateProps({ orientation });
   }
 
   fontSizeFromConfig(size: number): void {
-    this.css({ 'font-size': size });
-    this.terminal.options.fontSize = size;
-    this.fit();
+    this.view.updateProps({ fontSize: size });
   }
 
   fontFamilyFromConfig(family: string): void {
-    this.css({ 'font-family': family });
-
-    if (family) {
-      this.terminal.options.fontFamily = family;
-    }
-
-    this.fit();
+    this.view.updateProps({ fontFamily: family || '' });
   }
 
   reset(): void {
     clearTimeout(this.titleTimer);
 
-    this.buildTimer.text(BuildView.initialTimerText());
     this.titleTimer = 0;
+    this.outcome = 'idle';
     this.terminal.reset();
 
-    this.panelHeading.removeClass('success error');
-    this.title.removeClass('success error');
+    this.view.updateProps({
+      timer: BuildView.initialTimerText(),
+      outcome: 'idle'
+    });
 
     this.detach();
   }
 
   updateTitle(): void {
-    this.buildTimer.text(`${((Date.now() - this.starttime.getTime()) / 1000).toFixed(3)} s`);
+    this.view.updateProps({ timer: `${((Date.now() - this.starttime.getTime()) / 1000).toFixed(3)} s` });
     this.titleTimer = setTimeout(this.updateTitle.bind(this), 100);
   }
 
@@ -315,7 +216,7 @@ export default class BuildView extends View {
   }
 
   setHeading(heading: string): void {
-    this.heading.text(heading);
+    this.view.updateProps({ heading });
   }
 
   buildStarted(): void {
@@ -324,7 +225,7 @@ export default class BuildView extends View {
     this.attach();
 
     if (Config.get('stealFocus')) {
-      this.focus();
+      this.getPanelElement()?.focus();
     }
 
     this.updateTitle();
@@ -339,7 +240,7 @@ export default class BuildView extends View {
   }
 
   buildAbortInitiated(): void {
-    this.heading.addClass('icon-stop');
+    this.view.updateProps({ aborting: true });
   }
 
   buildAborted(): void {
@@ -347,9 +248,12 @@ export default class BuildView extends View {
   }
 
   finalizeBuild(success: boolean): void {
-    this.title.addClass(success ? 'success' : 'error');
-    this.panelHeading.addClass(success ? 'success' : 'error');
-    this.heading.removeClass('icon-stop');
+    this.outcome = success ? 'success' : 'error';
+
+    this.view.updateProps({
+      outcome: this.outcome,
+      aborting: false
+    });
 
     clearTimeout(this.titleTimer);
   }

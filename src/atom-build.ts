@@ -6,20 +6,33 @@ import path from 'path';
 import loaders from './loaders.ts';
 import pkg from '../package.json';
 import type { BuildFileTarget, BuildTarget } from './types.ts';
+import DevConsole from './log.ts';
 
 const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'cson', 'toml', 'yaml', 'yml'];
 
+const buildFiles = [
+  'build.config.cjs',
+  'build.config.js',
+  'build.config.json',
+  'build.config.json5',
+  'build.config.jsonc',
+  'build.config.toml',
+  'build.config.yaml',
+  'build.config.yml'
+];
+const legacyBuildFiles = [
+  '.atom-build.cjs',
+  '.atom-build.js',
+  '.atom-build.json',
+  '.atom-build.json5',
+  '.atom-build.jsonc',
+  '.atom-build.toml',
+  '.atom-build.yaml',
+  '.atom-build.yml'
+];
+
 const explorer = cosmiconfig(pkg.name, {
-  searchPlaces: [
-    '.atom-build.cjs',
-    '.atom-build.js',
-    '.atom-build.json',
-    '.atom-build.json5',
-    '.atom-build.jsonc',
-    '.atom-build.toml',
-    '.atom-build.yaml',
-    '.atom-build.yml'
-  ],
+  searchPlaces: [...buildFiles, ...legacyBuildFiles],
   loaders: {
     '.cson': loaders.cson,
     '.toml': loaders.toml,
@@ -32,6 +45,12 @@ const explorer = cosmiconfig(pkg.name, {
 
 async function getConfig(file: string): Promise<BuildFileTarget> {
   const realFile = await fs.promises.realpath(file);
+  const baseName = path.basename(realFile);
+
+  if (legacyBuildFiles.includes(baseName)) {
+    DevConsole.warn(`Deprecation warning: ${baseName} is a legacy build file name.`);
+  }
+
   const result = await explorer.load(realFile);
 
   return (result?.config as BuildFileTarget) || {};

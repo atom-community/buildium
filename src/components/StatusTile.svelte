@@ -10,7 +10,7 @@
 </script>
 
 <!-- The `#build-status-bar` id and the `status-*` classes are styled by
-     `build.less`, and third parties may key off them; they are a public
+     `build.css`, and third parties may key off them; they are a public
      contract and must not be renamed. -->
 <div id="build-status-bar" class="inline-block" class:status-success={buildState.status === 'success'} class:status-error={buildState.status === 'error'}>
   <!-- svelte-ignore a11y_missing_attribute -->

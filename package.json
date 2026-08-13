@@ -18,12 +18,10 @@
     "format": "oxfmt",
     "lint:fmt": "oxfmt --check",
     "lint:js": "oxlint",
-    "lint:styles": "node scripts/sync-xterm-css.mjs --check",
     "lint:svelte": "svelte-check --threshold warning",
     "lint:types": "tsc --noEmit",
     "lint": "npm-run-all --parallel lint:*",
     "start": "tsdown --watch",
-    "sync:xterm-css": "node scripts/sync-xterm-css.mjs",
     "test": "pnpm run lint",
     "prepare": "husky install"
   },
@@ -62,7 +60,7 @@
       "oxlint --fix",
       "oxfmt"
     ],
-    "*.{json,md,css}": "oxfmt"
+    "*.{json,md}": "oxfmt"
   },
   "engines": {
     "atom": ">=1.0.0"

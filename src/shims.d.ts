@@ -1,9 +1,4 @@
-/**
- * Ambient declarations for untyped runtime dependencies.
- *
- * `atom-space-pen-views` is deliberately typed loosely — it is scheduled for
- * removal and there is no value in modelling it properly.
- */
+/** Ambient declarations for untyped runtime dependencies. */
 
 declare module 'atom' {
   export * from '@pulsar-edit/types';
@@ -16,16 +11,6 @@ declare module '*.svelte' {
 
   const component: Component;
   export default component;
-}
-
-declare module 'atom-space-pen-views' {
-  /* Views are jQuery objects carrying dynamically generated outlets, so there
-     is nothing meaningful to model here. */
-  type SpacePenView = any;
-
-  export const View: SpacePenView;
-  export const SelectListView: SpacePenView;
-  export const $: any;
 }
 
 declare module 'cson-parser' {
