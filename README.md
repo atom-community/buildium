@@ -8,14 +8,14 @@
 
 This package is a fork of `build`, with a few key-differences:
 
-- no user tracking
-- deferred package activation
-- supports more build-files syntaxes
-- uses `xterm.js` as terminal
-- improved visual integration
-- written in TypeScript
-- Svelte UI
-- updated dependencies
+- it does not track your usage behaviour
+- it defers activation
+- it supports many types of build files
+- it uses xterm as terminal
+- it integrates naturally into visual language
+- it's written in TypeScript
+- it uses Svelte for UI
+- it updates regularly
 
 ## Installation
 
