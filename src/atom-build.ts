@@ -11,14 +11,14 @@ import DevConsole from './log.ts';
 const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'cson', 'toml', 'yaml', 'yml'];
 
 const buildFiles = [
-  'build.config.cjs',
-  'build.config.js',
-  'build.config.json',
-  'build.config.json5',
-  'build.config.jsonc',
-  'build.config.toml',
-  'build.config.yaml',
-  'build.config.yml'
+  'buildium.config.cjs',
+  'buildium.config.js',
+  'buildium.config.json',
+  'buildium.config.json5',
+  'buildium.config.jsonc',
+  'buildium.config.toml',
+  'buildium.config.yaml',
+  'buildium.config.yml'
 ];
 const legacyBuildFiles = [
   '.atom-build.cjs',
