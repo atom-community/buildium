@@ -1,6 +1,6 @@
 # buildium
 
-> Build your current project, directly from Atom
+> Build your current project, directly from Pulsar
 
 [![License](https://img.shields.io/github/license/atom-community/buildium?color=blue&style=for-the-badge)](https://github.com/atom-community/buildium/blob/master/LICENSE)
 [![Release](https://img.shields.io/github/v/release/atom-community/buildium?style=for-the-badge)](https://github.com/atom-community/buildium/releases)
@@ -19,32 +19,32 @@ This package is a fork of `build`, with a few key-differences:
 
 ## Installation
 
-### apm
+### ppm
 
-Install `buildium` from Atom's [Package Manager](http://flight-manual.atom.io/using-atom/sections/atom-packages/) or the command-line equivalent:
+Install `buildium` from Pulsar's [Package Manager](https://docs.pulsar-edit.dev/using-pulsar/packages/#command-line) or the command-line equivalent:
 
-`$ apm install buildium`
+`$ ppm install buildium`
 
 ### Using Git
 
-Change to your Atom packages directory:
+Change to your Pulsar packages directory:
 
 **Windows**
 
 ```powershell
 # Powershell
-$ cd $Env:USERPROFILE\.atom\packages
+$ cd $Env:USERPROFILE\.pulsar\packages
 ```
 
 ```cmd
 :: Command Prompt
-$ cd %USERPROFILE%\.atom\packages
+$ cd %USERPROFILE%\.pulsar\packages
 ```
 
 **Linux & macOS**
 
 ```bash
-$ cd ~/.atom/packages/
+$ cd ~/.pulsar/packages/
 ```
 
 Clone repository as `buildium`:
@@ -56,7 +56,7 @@ $ git clone https://github.com/idleberg/atom-buildium buildium
 Inside the cloned directory, install dependencies using your preferred Node package manager:
 
 ```bash
-$ yarn || npm install
+$ ppm install
 ```
 
 ## Usage
@@ -149,5 +149,5 @@ The following keybindings are for Windows and Linux, Mac should use <kbd>Cmd</kb
 This work is licensed under [The MIT License](https://opensource.org/licenses/MIT)
 
 [build-providers]: https://atombuild.github.io/
-[packages]: https://atom.io/packages/search?q=keyword:buildprovider
-[config-options]: https://github.com/noseglid/atom-build/blob/master/README.md#configuration-options
+[packages]: https://packages.pulsar-edit.dev/packages/search?q=buildprovider
+[config-options]: #configuration-options
