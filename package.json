@@ -14,7 +14,7 @@
   "main": "./lib/buildium",
   "scripts": {
     "build": "tsdown",
-    "dev": "pnpm run start",
+    "dev": "npm run start",
     "format": "oxfmt",
     "lint:fmt": "oxfmt --check",
     "lint:js": "oxlint",
@@ -22,7 +22,8 @@
     "lint:types": "tsc --noEmit",
     "lint": "npm-run-all --parallel lint:*",
     "start": "tsdown --watch",
-    "test": "pnpm run lint",
+    "test": "npm run lint",
+    "prepublishOnly": "npm run build",
     "prepare": "husky install"
   },
   "dependencies": {
