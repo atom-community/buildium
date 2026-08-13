@@ -151,4 +151,4 @@ This work is licensed under [The MIT License](https://opensource.org/licenses/MI
 
 [build-providers]: https://atombuild.github.io/
 [packages]: https://packages.pulsar-edit.dev/packages/search?q=buildprovider
-[config-options]: #configuration-options
+[config-options]: https://github.com/noseglid/atom-build/blob/master/README.md#configuration-options
