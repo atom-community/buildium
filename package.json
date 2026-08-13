@@ -1,6 +1,6 @@
 {
   "name": "buildium",
-  "version": "0.75.5",
+  "version": "0.76.0",
   "description": "Build your current project, directly from Atom",
   "keywords": [
     "build",
