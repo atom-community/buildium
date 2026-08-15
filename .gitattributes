@@ -1,0 +1,2 @@
+.vscode/*.json linguist-language=jsonc
+lib/** linguist-generated=true -diff -merge
