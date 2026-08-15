@@ -25,7 +25,6 @@ export type BuildiumConfig = {
   statusBar: StatusBarPlacement;
   statusBarPriority: number;
   terminalScrollback: number;
-  muteConflictWarning: boolean;
 };
 
 export type ConfigKey = keyof BuildiumConfig;
@@ -134,13 +133,6 @@ export default {
       type: 'integer',
       default: 1000,
       order: 16
-    },
-    muteConflictWarning: {
-      title: 'Mute Conflict Warning',
-      description: 'Disables the startup dialog, whether the user wants to disable the original `build` package',
-      type: 'boolean',
-      default: false,
-      order: 17
     }
   },
 

@@ -1,7 +1,7 @@
 import { Disposable } from 'atom';
 import { spawn, type ChildProcess } from 'child_process';
 import crossSpawn from 'cross-spawn';
-import * as atomPackageDeps from 'atom-package-deps';
+import { ConflictDeclinedError, dependencyManager } from '@children-of-atom/dependency-manager';
 import kill from 'tree-kill';
 import * as Utils from './utils.ts';
 import BuildError from './build-error.ts';
@@ -52,7 +52,13 @@ export default {
       process.env.PATH = (process.env.PATH ? `${process.env.PATH}:` : '') + '/usr/local/bin';
     }
 
-    atomPackageDeps.install(name);
+    dependencyManager(name).catch((error: unknown) => {
+      if (error instanceof ConflictDeclinedError) {
+        return;
+      }
+
+      DevConsole.error(error);
+    });
 
     this.tools = [Tools as unknown as BuildProviderConstructor];
     this.linter = null;
@@ -80,10 +86,6 @@ export default {
 
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
     atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
-
-    if (!Config.get('muteConflictWarning') && atom.packages.isPackageActive('build')) {
-      this.disableBuild();
-    }
   },
 
   setupTargetManager(): void {
@@ -382,29 +384,6 @@ export default {
     } else {
       this.buildView.reset();
     }
-  },
-
-  disableBuild(): void {
-    const notification = atom.notifications.addWarning("In order to avoid conflicts, it's recommended to disable (or remove) the original `build` package", {
-      dismissable: true,
-      buttons: [
-        {
-          text: 'Disable Package',
-          className: 'icon icon-playback-pause',
-          onDidClick() {
-            atom.packages.disablePackage('build');
-            return notification.dismiss();
-          }
-        },
-        {
-          text: "Don't Ask Again",
-          onDidClick() {
-            Config.set('muteConflictWarning', true);
-            return notification.dismiss();
-          }
-        }
-      ]
-    });
   },
 
   consumeLinterRegistry(registry: LinterRegistry): void {

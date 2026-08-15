@@ -17,7 +17,3 @@ declare module 'cson-parser' {
   export function parse(content: string): unknown;
   export function stringify(value: unknown, visitor?: unknown, indent?: string | number): string;
 }
-
-declare module 'atom-package-deps' {
-  export function install(packageName?: string, promptUser?: boolean): Promise<void>;
-}

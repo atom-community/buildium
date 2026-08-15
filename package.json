@@ -30,7 +30,6 @@
     "@iarna/toml": "^2.2.5",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
-    "atom-package-deps": "^7.2.2",
     "cosmiconfig": "^10.0.0",
     "cross-spawn": "^7.0.3",
     "cson-parser": "^4.0.8",
@@ -41,6 +40,7 @@
     "xregexp": "^5.0.1"
   },
   "devDependencies": {
+    "@children-of-atom/dependency-manager": "^0.1.0",
     "@children-of-atom/svelte-view": "^0.1.1",
     "@pulsar-edit/types": "^1.132.0",
     "@types/cross-spawn": "^6.0.6",
@@ -104,9 +104,14 @@
       }
     }
   },
-  "package-deps": [
-    {
-      "name": "busy-signal"
-    }
-  ]
+  "dependencyManager": {
+    "dependsOn": [
+      "busy-signal"
+    ],
+    "conflictsWith": [
+      {
+        "name": "build"
+      }
+    ]
+  }
 }
