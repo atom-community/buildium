@@ -1,4 +1,3 @@
-import CSON from 'cson-parser';
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
 
 /** Matches cosmiconfig's `LoaderSync` signature. */
@@ -51,15 +50,7 @@ function describe(error: JSONCParseError, content: string): string {
   return `${parseErrorNames[error.error] ?? '<unknown ParseErrorCode>'} at line ${line}, column ${column}`;
 }
 
-const loaders: Record<'cson' | 'json5' | 'jsonc' | 'toml', Loader> = {
-  cson(filePath: string, content: string) {
-    try {
-      return CSON.parse(content) as object | null;
-    } catch (error) {
-      rethrow('CSON', filePath, error);
-    }
-  },
-
+const loaders: Record<'json5' | 'jsonc' | 'toml', Loader> = {
   json5(filePath: string, content: string) {
     try {
       return parseJSON5<object | null>(content);

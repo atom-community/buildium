@@ -8,7 +8,7 @@ import pkg from '../package.json';
 import type { BuildFileTarget, BuildTarget } from './types.ts';
 import DevConsole from './log.ts';
 
-const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'cson', 'toml', 'yaml', 'yml'];
+const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'toml', 'yaml', 'yml'];
 
 const buildFiles = [
   'buildium.config.cjs',
@@ -34,7 +34,6 @@ const legacyBuildFiles = [
 const explorer = cosmiconfig(pkg.name, {
   searchPlaces: [...buildFiles, ...legacyBuildFiles],
   loaders: {
-    '.cson': loaders.cson,
     '.toml': loaders.toml,
     '.json': loaders.jsonc,
     '.json5': loaders.json5,
