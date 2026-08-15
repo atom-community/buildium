@@ -1,6 +1,6 @@
 {
   "name": "buildium",
-  "version": "0.76.1",
+  "version": "0.77.0",
   "description": "Build your current project, directly from Pulsar",
   "keywords": [
     "build",
