@@ -57,8 +57,9 @@ export default defineConfig((options) => {
       neverBundle: [/^node:/, 'atom', 'electron', 'nucleo-matcher-wasm']
     },
 
-    // Svelte and `@children-of-atom/*` are ESM-only, so they cannot be apm
-    // dependencies of a CJS package — they are devDependencies and get inlined.
+    // Svelte, `@children-of-atom/*` and `confbox` are ESM-only, so they cannot
+    // be apm dependencies of a CJS package — they are devDependencies and get
+    // inlined.
     //
     // The `browser` condition is load-bearing: svelte's `.` export falls back to
     // `index-server.js`, whose `mount()` throws `lifecycle_function_unavailable`,
