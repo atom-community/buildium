@@ -1,0 +1,168 @@
+// Defaults
+@ui-syntax-color: @syntax-background-color;
+@ui-s-h: hue(@ui-syntax-color);
+@ui-s-s: saturation(@ui-syntax-color);
+@ui-s-l: lightness(@ui-syntax-color);
+@ui-inv: 10%;
+@ui-hue: @ui-s-h;
+@ui-saturation: @ui-s-s;
+@ui-lightness: @ui-s-l;
+@ui-lightness-border: (@ui-s-l * 0.6);
+@ui-fg: @text-color;
+@ui-bg: @base-background-color;
+@ui-border: @base-border-color;
+
+@ui-theme-name: unknown;
+
+// Text
+@text-color-faded: fade(@text-color, 20%);
+@text-color-added: @text-color-success;
+@text-color-ignored: @text-color-subtle;
+@text-color-modified: @text-color-warning;
+@text-color-removed: @text-color-error;
+@text-color-renamed: @text-color-info;
+
+// Background levels
+@level-1-color: lighten(@base-background-color, 6%);
+@level-2-color: @base-background-color;
+@level-3-color: darken(@base-background-color, 3%);
+@level-3-color-hover: lighten(@level-3-color, 6%);
+@level-3-color-active: lighten(@level-3-color, 3%);
+
+// Accent
+@accent-luma: luma(hsl(@ui-hue, 50%, 50%));
+@accent-color: @background-color-info;
+@accent-text-color: contrast(@accent-color);
+@accent-bg-color: @background-color-info;
+@accent-bg-text-color: contrast(@accent-bg-color);
+@accent-only-text-color: @text-color-info;
+
+// Components
+@badge-background-color: @background-color-highlight;
+@button-text-color-selected: @text-color-selected;
+@button-border-color-selected: @button-border-color;
+@checkbox-background-color: @background-color-highlight;
+@input-background-color-focus: @input-background-color;
+@input-selection-color: @background-color-selected;
+@input-selection-color-focus: @background-color-selected;
+@overlay-backdrop-color: @app-background-color;
+@overlay-backdrop-opacity: 0.75;
+@progress-background-color: @accent-color;
+@scrollbar-color-editor: @scrollbar-color;
+@scrollbar-background-color-editor: @ui-syntax-color;
+
+// Tabs
+@tab-text-color: @text-color-subtle;
+@tab-text-color-active: @text-color-highlight;
+@tab-text-color-editor: @text-color-highlight;
+@tab-background-color-editor: @ui-syntax-color;
+@tab-inactive-status-added: fade(@text-color-success, 55%);
+@tab-inactive-status-modified: fade(@text-color-warning, 55%);
+
+// Tooltips
+@tooltip-background-color: @accent-bg-color;
+@tooltip-text-color: @accent-bg-text-color;
+@tooltip-text-key-color: @tooltip-background-color;
+@tooltip-background-key-color: @tooltip-text-color;
+
+// Sizes
+@ui-size: 1em;
+@ui-input-size: (@ui-size * 1.15);
+@ui-padding: (@ui-size * 1.5);
+@ui-padding-pane: (@ui-size * 0.5);
+@ui-padding-icon: (@ui-padding / 3.3);
+@ui-line-height: (@ui-size * 2);
+@ui-tab-height: (@ui-size * 2.5);
+
+// Package overrides
+@settings-list-background-color: darken(@level-2-color, 1.5%);
+@theme-config-box-shadow: none;
+@theme-config-box-shadow-selected: none;
+@theme-config-border-selected: @base-border-color;
+
+@import 'ui-variables';
+
+:root {
+  /* Theme identity */
+  --ui-theme-name: @ui-theme-name;
+
+  /* Color derivation */
+  --ui-syntax-color: @ui-syntax-color;
+  --ui-s-h: @ui-s-h;
+  --ui-s-s: @ui-s-s;
+  --ui-s-l: @ui-s-l;
+  --ui-inv: @ui-inv;
+  --ui-hue: @ui-hue;
+  --ui-saturation: @ui-saturation;
+  --ui-lightness: @ui-lightness;
+  --ui-lightness-border: @ui-lightness-border;
+  --ui-fg: @ui-fg;
+  --ui-bg: @ui-bg;
+  --ui-border: @ui-border;
+
+  /* Text (custom) */
+  --text-color-faded: @text-color-faded;
+  --text-color-added: @text-color-added;
+  --text-color-ignored: @text-color-ignored;
+  --text-color-modified: @text-color-modified;
+  --text-color-removed: @text-color-removed;
+  --text-color-renamed: @text-color-renamed;
+
+  /* Background levels */
+  --level-1-color: @level-1-color;
+  --level-2-color: @level-2-color;
+  --level-3-color: @level-3-color;
+  --level-3-color-hover: @level-3-color-hover;
+  --level-3-color-active: @level-3-color-active;
+
+  /* Accent */
+  --accent-luma: @accent-luma;
+  --accent-color: @accent-color;
+  --accent-text-color: @accent-text-color;
+  --accent-bg-color: @accent-bg-color;
+  --accent-bg-text-color: @accent-bg-text-color;
+  --accent-only-text-color: @accent-only-text-color;
+
+  /* Components (custom) */
+  --badge-background-color: @badge-background-color;
+  --button-text-color-selected: @button-text-color-selected;
+  --button-border-color-selected: @button-border-color-selected;
+  --checkbox-background-color: @checkbox-background-color;
+  --input-background-color-focus: @input-background-color-focus;
+  --input-selection-color: @input-selection-color;
+  --input-selection-color-focus: @input-selection-color-focus;
+  --overlay-backdrop-color: @overlay-backdrop-color;
+  --overlay-backdrop-opacity: @overlay-backdrop-opacity;
+  --progress-background-color: @progress-background-color;
+  --scrollbar-color-editor: @scrollbar-color-editor;
+  --scrollbar-background-color-editor: @scrollbar-background-color-editor;
+
+  /* Tabs (custom) */
+  --tab-text-color: @tab-text-color;
+  --tab-text-color-active: @tab-text-color-active;
+  --tab-text-color-editor: @tab-text-color-editor;
+  --tab-background-color-editor: @tab-background-color-editor;
+  --tab-inactive-status-added: @tab-inactive-status-added;
+  --tab-inactive-status-modified: @tab-inactive-status-modified;
+
+  /* Tooltips */
+  --tooltip-background-color: @tooltip-background-color;
+  --tooltip-text-color: @tooltip-text-color;
+  --tooltip-text-key-color: @tooltip-text-key-color;
+  --tooltip-background-key-color: @tooltip-background-key-color;
+
+  /* Sizes (custom) */
+  --ui-size: @ui-size;
+  --ui-input-size: @ui-input-size;
+  --ui-padding: @ui-padding;
+  --ui-padding-pane: @ui-padding-pane;
+  --ui-padding-icon: @ui-padding-icon;
+  --ui-line-height: @ui-line-height;
+  --ui-tab-height: @ui-tab-height;
+
+  /* Package overrides */
+  --settings-list-background-color: @settings-list-background-color;
+  --theme-config-box-shadow: @theme-config-box-shadow;
+  --theme-config-box-shadow-selected: @theme-config-box-shadow-selected;
+  --theme-config-border-selected: @theme-config-border-selected;
+}

@@ -23,11 +23,12 @@
   6. Labels render through `HighlightText` instead of `{@html}`. Item labels are
      build-target names read out of project files; interpolating them as HTML is
      an injection the component does not need.
-  7. The query input is themed off Atom's ui-variable mirrors, and its focus ring
-     follows the `.focus()` mixin every themed input goes through. Upstream's
-     hard-coded `rgba(255, 255, 255, …)` renders it all but invisible on a dark
-     theme, and its near-white focus ring matches nothing else in the UI — see
-     the `input.editor` rules below.
+  7. The query input is themed off the custom properties that
+     `styles/rosetta.*.less` bridges from the active theme's LESS variables, and
+     its focus ring follows the `.focus()` mixin every themed input goes through.
+     Upstream's hard-coded `rgba(255, 255, 255, …)` renders it all but invisible
+     on a dark theme, and its near-white focus ring matches nothing else in the
+     UI — see the `input.editor` rules below.
   8. The list suppresses mousedown's default action. Upstream's items carry
      `onclick` handlers that can never run: the mousedown blurs the query input,
      the container's `onfocusout` closes the list, and the click is dispatched
@@ -559,9 +560,12 @@
 
   /* Upstream hard-codes `rgba(255, 255, 255, …)` here, which is a 6%-white box on
      whatever the overlay background happens to be — invisible on a dark theme and
-     wrong on a light one. Themed with Atom's ui-variable mirrors instead, each with
-     a fallback that carries enough contrast either way, since not every theme
-     publishes the custom properties. */
+     wrong on a light one. These read the active theme's values instead:
+     `styles/rosetta.ui-variables.less` and `styles/rosetta.one-ui.less` import
+     the theme's `ui-variables` and re-declare each LESS variable as a matching
+     custom property on `:root`, which is the only way a compile-time `@variable`
+     can reach CSS that Svelte injects at runtime. The fallbacks stay, and carry
+     enough contrast either way, for names a given theme leaves undefined. */
   input.editor {
     display: block;
     width: 100%;
@@ -587,9 +591,8 @@
      top of it. Upstream's near-white `--text-color-highlight` ring is the one
      thing here that does not look like the rest of the UI, so this restates the
      mixin. The fallback is one-dark-ui's own `@accent-color`, deliberately not
-     `--background-color-info`: that mirror is published where `--accent-color`
-     is not, but it carries `@accent-bg-color` — a darker blue that reads as
-     subtly wrong next to every other focused input. */
+     `--background-color-info`, which carries `@accent-bg-color` — a darker blue
+     that reads as subtly wrong next to every other focused input. */
   input.editor:focus {
     border-color: var(--accent-color, #568af2);
     box-shadow: 0 0 0 1px var(--accent-color, #568af2);
@@ -612,7 +615,7 @@
     margin-inline-start: 0.4em;
     padding: 1px 6px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--badge-background-color, rgba(127, 127, 127, 0.2));
     font-variant-numeric: tabular-nums;
     font-size: 0.85em;
   }
