@@ -12,8 +12,3 @@ declare module '*.svelte' {
   const component: Component;
   export default component;
 }
-
-declare module 'cson-parser' {
-  export function parse(content: string): unknown;
-  export function stringify(value: unknown, visitor?: unknown, indent?: string | number): string;
-}
