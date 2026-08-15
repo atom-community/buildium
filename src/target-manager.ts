@@ -1,6 +1,7 @@
 import { CompositeDisposable } from 'atom';
 import EventEmitter from 'events';
 import * as Utils from './utils.ts';
+import watchBuildFiles from './build-file-watcher.ts';
 import Config from './config.ts';
 import DevConsole from './log.ts';
 import TargetsView from './targets-view.ts';
@@ -11,6 +12,7 @@ class TargetManager extends EventEmitter {
   private tools: BuildProviderConstructor[] = [];
   private busyProvider?: BusyProvider;
   private targetsView: TargetsView | null = null;
+  private subscriptions = new CompositeDisposable();
 
   constructor() {
     super();
@@ -19,19 +21,25 @@ class TargetManager extends EventEmitter {
 
     this.pathTargets = projectPaths.map((path) => this._defaultPathTarget(path));
 
-    atom.project.onDidChangePaths((newProjectPaths) => {
-      const addedPaths = newProjectPaths.filter((el) => projectPaths.indexOf(el) === -1);
-      const removedPaths = projectPaths.filter((el) => newProjectPaths.indexOf(el) === -1);
+    this.subscriptions.add(
+      atom.project.onDidChangePaths((newProjectPaths) => {
+        const addedPaths = newProjectPaths.filter((el) => projectPaths.indexOf(el) === -1);
+        const removedPaths = projectPaths.filter((el) => newProjectPaths.indexOf(el) === -1);
 
-      addedPaths.forEach((path) => this.pathTargets.push(this._defaultPathTarget(path)));
-      this.pathTargets = this.pathTargets.filter((pt) => -1 === removedPaths.indexOf(pt.path));
-      this.refreshTargets(addedPaths);
+        addedPaths.forEach((path) => this.pathTargets.push(this._defaultPathTarget(path)));
+        this.pathTargets = this.pathTargets.filter((pt) => -1 === removedPaths.indexOf(pt.path));
+        this.refreshTargets(addedPaths);
 
-      projectPaths = newProjectPaths;
-    });
+        projectPaths = newProjectPaths;
+      }),
 
-    atom.commands.add('atom-workspace', 'buildium:refresh-targets', () => this.refreshTargets());
-    atom.commands.add('atom-workspace', 'buildium:select-active-target', () => this.selectActiveTarget());
+      atom.commands.add('atom-workspace', 'buildium:refresh-targets', () => this.refreshTargets()),
+      atom.commands.add('atom-workspace', 'buildium:select-active-target', () => this.selectActiveTarget()),
+
+      // Editing, creating or deleting a build file refreshes the targets it
+      // produces, without waiting for `buildium:refresh-targets`.
+      watchBuildFiles((roots) => this.refreshTargets(roots))
+    );
   }
 
   setBusyProvider(busyProvider: BusyProvider): void {
@@ -51,6 +59,8 @@ class TargetManager extends EventEmitter {
   }
 
   destroy(): void {
+    this.subscriptions.dispose();
+
     this.pathTargets.forEach((pathTarget) =>
       pathTarget.tools.map((tool) => {
         tool.removeAllListeners?.('refresh');

@@ -1,3 +1,4 @@
+import { CompositeDisposable } from 'atom';
 import { createStatusBarTile, type SvelteStatusBarResult } from '@children-of-atom/svelte-view';
 import Config from './config.ts';
 import StatusTile from './components/StatusTile.svelte';
@@ -17,12 +18,26 @@ export default class StatusBarView {
   private tile: SvelteStatusBarResult | null = null;
   private tooltip: Disposable | null = null;
   private clickCallback?: () => void;
+  private subscriptions = new CompositeDisposable();
 
   constructor(statusBar: StatusBarService) {
     this.statusBar = statusBar;
 
-    Config.observe('statusBar', () => this.attach());
-    Config.observe('statusBarPriority', () => this.attach());
+    // `Config.observe` fires immediately with the current value, so letting each
+    // observer attach would build and tear down the tile once per key before the
+    // window has even settled. Ignore those first calls and attach once, below.
+    let observing = false;
+    const reattach = () => {
+      if (observing) {
+        this.attach();
+      }
+    };
+
+    this.subscriptions.add(Config.observe('statusBar', reattach), Config.observe('statusBarPriority', reattach));
+
+    observing = true;
+
+    this.attach();
   }
 
   attach(): void {
@@ -55,6 +70,7 @@ export default class StatusBarView {
     }
   }
 
+  /** Tears down the tile only; `attach()` calls this to rebuild it. */
   destroy(): void {
     if (this.tile) {
       this.tile.dispose();
@@ -65,6 +81,12 @@ export default class StatusBarView {
       this.tooltip.dispose();
       this.tooltip = null;
     }
+  }
+
+  /** Full teardown, including the config observers. For package deactivation. */
+  dispose(): void {
+    this.subscriptions.dispose();
+    this.destroy();
   }
 
   tooltipMessage(): string {

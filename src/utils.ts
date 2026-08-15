@@ -120,17 +120,44 @@ function getVersion(): string {
   return `v${version}`;
 }
 
-function getBuildFilenames(): string[] {
-  return [
-    'package.json',
-    '.atom-build.json',
-    '.atom-build.yaml',
-    '.atom-build.yml',
-    '.atom-build.json5',
-    '.atom-build.js',
-    '.atom-build.cjs',
-    '.atom-build.toml'
-  ];
-}
+/**
+ * Every file name that can produce build targets, in order of precedence — the
+ * order documented in the readme, and the order cosmiconfig searches.
+ *
+ * This is the single source of truth for two things that must not drift apart:
+ * which files `atom-build.ts` reads, and which files `build-file-watcher.ts`
+ * refreshes on. `package.json` only counts when it carries a `buildium` object;
+ * cosmiconfig enforces that through `packageProp`.
+ */
+const buildFileNames = [
+  'package.json',
+  'buildium.config.cjs',
+  'buildium.config.js',
+  'buildium.config.json',
+  'buildium.config.json5',
+  'buildium.config.jsonc',
+  'buildium.config.toml',
+  'buildium.config.yaml',
+  'buildium.config.yml',
+  '.atom-build.cjs',
+  '.atom-build.js',
+  '.atom-build.json',
+  '.atom-build.json5',
+  '.atom-build.jsonc',
+  '.atom-build.toml',
+  '.atom-build.yaml',
+  '.atom-build.yml'
+];
 
-export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, getBuildFilenames };
+/** The legacy `.atom-build.*` subset, which is warned about when loaded. */
+const legacyBuildFileNames = buildFileNames.filter((file) => file.startsWith('.atom-build.'));
+
+/**
+ * The subset valid as a home-directory fallback, which applies to every
+ * project. `package.json` is excluded deliberately: a `~/package.json` is
+ * usually an accident of running `npm init` in the wrong directory, and letting
+ * one silently supply build targets to every project would be surprising.
+ */
+const homeBuildFileNames = buildFileNames.filter((file) => file !== 'package.json');
+
+export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, buildFileNames, legacyBuildFileNames, homeBuildFileNames };

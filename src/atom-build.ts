@@ -4,36 +4,28 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import loaders from './loaders.ts';
+import * as Utils from './utils.ts';
 import pkg from '../package.json';
 import type { BuildFileTarget, BuildTarget } from './types.ts';
 import DevConsole from './log.ts';
 
-const buildFileExtensions = ['cjs', 'js', 'json', 'json5', 'jsonc', 'toml', 'yaml', 'yml'];
-
-const buildFiles = [
-  'buildium.config.cjs',
-  'buildium.config.js',
-  'buildium.config.json',
-  'buildium.config.json5',
-  'buildium.config.jsonc',
-  'buildium.config.toml',
-  'buildium.config.yaml',
-  'buildium.config.yml'
-];
-const legacyBuildFiles = [
-  '.atom-build.cjs',
-  '.atom-build.js',
-  '.atom-build.json',
-  '.atom-build.json5',
-  '.atom-build.jsonc',
-  '.atom-build.toml',
-  '.atom-build.yaml',
-  '.atom-build.yml'
-];
-
 const explorer = cosmiconfig(pkg.name, {
-  searchPlaces: [...buildFiles, ...legacyBuildFiles],
+  // `package.json` is read through cosmiconfig's `packageProp`, which defaults
+  // to the module name — the `buildium` object the readme documents.
+  searchPlaces: [...Utils.buildFileNames],
+
+  // cosmiconfig caches by filepath and defaults to `cache: true`, and this
+  // explorer is a module-level singleton shared by every provider instance. A
+  // refresh constructs a fresh `CustomFile`, but it would still be handed the
+  // config that was read the first time — so editing a build file appeared to do
+  // nothing while *creating* one worked, its path not being in the cache yet.
+  // Refreshes are exactly the moments the file must be re-read, and they are
+  // rare, so there is nothing here for a cache to win.
+  cache: false,
+
   loaders: {
+    '.cjs': loaders.javascript,
+    '.js': loaders.javascript,
     '.toml': loaders.toml,
     '.json': loaders.jsonc,
     '.json5': loaders.json5,
@@ -42,17 +34,29 @@ const explorer = cosmiconfig(pkg.name, {
   }
 });
 
-async function getConfig(file: string): Promise<BuildFileTarget> {
+/**
+ * Loads one build file. Returns `null` when the file holds no build
+ * configuration at all — which is the common case for `package.json`, where
+ * cosmiconfig yields an empty result unless the `buildium` object is present.
+ * Without this, every project with a `package.json` would gain a phantom target
+ * whose `exec` is `undefined`.
+ */
+async function getConfig(file: string): Promise<BuildFileTarget | null> {
   const realFile = await fs.promises.realpath(file);
   const baseName = path.basename(realFile);
 
-  if (legacyBuildFiles.includes(baseName)) {
+  if (Utils.legacyBuildFileNames.includes(baseName)) {
     DevConsole.warn(`Deprecation warning: ${baseName} is a legacy build file name.`);
   }
 
   const result = await explorer.load(realFile);
+  const config = result?.config as BuildFileTarget | undefined;
 
-  return (result?.config as BuildFileTarget) || {};
+  if (!config || (!config.cmd && !config.targets)) {
+    return null;
+  }
+
+  return config;
 }
 
 function createBuildConfig(build: BuildFileTarget, name: string): BuildTarget {
@@ -82,9 +86,16 @@ function createBuildConfig(build: BuildFileTarget, name: string): BuildTarget {
   return conf;
 }
 
+/**
+ * The built-in provider: build targets read out of the project's build file.
+ *
+ * Watching those files is *not* this class's job — `build-file-watcher.ts`
+ * covers every candidate name across every project root from one subscription,
+ * including files that do not exist yet. The `refresh` event stays part of the
+ * `BuildProvider` contract for third-party providers.
+ */
 export default class CustomFile extends EventEmitter {
   private cwd: string;
-  private fileWatchers: Array<{ close(): void }> = [];
   private files: string[] = [];
 
   constructor(cwd: string) {
@@ -92,44 +103,32 @@ export default class CustomFile extends EventEmitter {
     this.cwd = cwd;
   }
 
-  destructor(): void {
-    this.fileWatchers.forEach((fw) => fw.close());
-  }
-
   getNiceName(): string {
     return 'Custom file';
   }
 
   isEligible(): boolean {
-    this.files = buildFileExtensions
-      .flatMap((ext) => [path.join(this.cwd, `.atom-build.${ext}`), path.join(os.homedir(), `.atom-build.${ext}`)])
-      .filter((file) => fs.existsSync(file));
+    // A build file in the home directory acts as a fallback for every project,
+    // so both locations are collected and their targets concatenated.
+    this.files = [
+      ...Utils.buildFileNames.map((fileName) => path.join(this.cwd, fileName)),
+      ...Utils.homeBuildFileNames.map((fileName) => path.join(os.homedir(), fileName))
+    ].filter((file) => fs.existsSync(file));
 
     return 0 < this.files.length;
   }
 
   async settings(): Promise<BuildTarget[]> {
-    this.fileWatchers.forEach((fw) => fw.close());
-
-    // On Linux, closing a watcher triggers a new callback, which causes an infinite loop
-    // fallback to `watchFile` here which polls instead.
-    this.fileWatchers = this.files.map((file) => {
-      const onRefresh = () => this.emit('refresh');
-
-      if (os.platform() === 'linux') {
-        fs.watchFile(file, onRefresh);
-
-        // `fs.watchFile` returns a `StatWatcher`, which has no `close()`
-        return { close: () => fs.unwatchFile(file, onRefresh) };
-      }
-
-      return fs.watch(file, onRefresh);
-    });
-
     const config: BuildTarget[] = [];
     const buildConfigs = await Promise.all(this.files.map((file) => getConfig(file)));
 
     buildConfigs.forEach((build) => {
+      // `getConfig` returns `null` for a file that carries no build
+      // configuration — a `package.json` without a `buildium` object, say.
+      if (!build) {
+        return;
+      }
+
       config.push(
         createBuildConfig(build, build.name || 'default'),
         ...Object.keys(build.targets || {}).map((name) => createBuildConfig((build.targets as Record<string, BuildFileTarget>)[name] as BuildFileTarget, name))

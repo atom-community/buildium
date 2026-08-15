@@ -1,7 +1,9 @@
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
+import fs from 'fs';
+import { pathToFileURL } from 'url';
 
-/** Matches cosmiconfig's `LoaderSync` signature. */
-type Loader = (filePath: string, content: string) => object | null;
+/** Matches cosmiconfig's `Loader` signature, which may also be synchronous. */
+type Loader = (filePath: string, content: string) => object | null | Promise<object | null>;
 
 /**
  * `printParseErrorCode`, restated. confbox hands `errors` straight through to
@@ -50,7 +52,35 @@ function describe(error: JSONCParseError, content: string): string {
   return `${parseErrorNames[error.error] ?? '<unknown ParseErrorCode>'} at line ${line}, column ${column}`;
 }
 
-const loaders: Record<'json5' | 'jsonc' | 'toml', Loader> = {
+const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'toml', Loader> = {
+  // A JavaScript build file is cached by Node, and cosmiconfig's own loader has
+  // no way to bust it — so an edited `buildium.config.js` would keep returning
+  // whatever it exported the first time it was read, for the whole session.
+  //
+  // Node keeps *two* caches and each half of this evicts one of them, which is
+  // why both lines are needed. `require.cache` is what a CommonJS build file
+  // lives in, and it is also what the ESM loader's CJS bridge reads through, so
+  // deleting the entry alone is enough for `.cjs` — but not for an ESM file,
+  // whose namespace lives in the ESM registry that `require.cache` cannot reach.
+  // The ESM registry is keyed by URL and has no eviction API at all, so the only
+  // way past it is to ask for a URL it has not seen: hence the mtime query.
+  async javascript(filePath: string) {
+    try {
+      try {
+        delete require.cache[require.resolve(filePath)];
+      } catch {
+        // Not resolvable as CommonJS — nothing cached under that name.
+      }
+
+      const href = `${pathToFileURL(filePath).href}?mtime=${fs.statSync(filePath).mtimeMs}`;
+      const module = (await import(href)) as Record<string, unknown> | null;
+
+      return (module && 'default' in module ? module.default : module) as object | null;
+    } catch (error) {
+      rethrow('JavaScript', filePath, error);
+    }
+  },
+
   json5(filePath: string, content: string) {
     try {
       return parseJSON5<object | null>(content);

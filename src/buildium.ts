@@ -85,7 +85,17 @@ export default {
     });
 
     atom.workspace.onDidChangeActivePaneItem(() => this.updateStatusBar());
-    atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
+
+    // This package activates lazily — `activationHooks` waits on the shell
+    // environment, which on macOS means spawning a login shell. That regularly
+    // lands *after* the initial packages have activated, and Atom's emitter does
+    // not replay to late subscribers, so the event would never arrive and the
+    // first refresh would never run. Hence the companion predicate.
+    if (atom.packages.hasActivatedInitialPackages()) {
+      this.targetManager.refreshTargets();
+    } else {
+      atom.packages.onDidActivateInitialPackages(() => this.targetManager.refreshTargets());
+    }
   },
 
   setupTargetManager(): void {
@@ -154,7 +164,7 @@ export default {
       this.child = null;
     }
 
-    this.statusBarView?.destroy();
+    this.statusBarView?.dispose();
     this.buildView?.destroy();
     this.saveConfirmView?.destroy();
     this.linter?.destroy();
@@ -410,9 +420,11 @@ export default {
   consumeStatusBar(statusBar: StatusBarService): void {
     DevConsole.log('Consuming status-bar');
 
+    // No `attach()` here: `Config.observe` fires immediately with the current
+    // value, so the two `observe` calls in the constructor have already attached
+    // the tile. A third call would only destroy and re-create it.
     this.statusBarView = new StatusBarView(statusBar);
     this.statusBarView.onClick(() => this.targetManager.selectActiveTarget());
-    this.statusBarView.attach();
     this.targetManager.refreshTargets();
   },
 
