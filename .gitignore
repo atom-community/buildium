@@ -2,7 +2,7 @@
 bower_components/
 node_modules/
 npm-debug.log*
-pnpm-lockfile.yaml
+pnpm-lock.yaml
 shrinkwrap.yaml
 vendor/
 yarn-error.log
