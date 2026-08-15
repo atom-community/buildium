@@ -1,6 +1,4 @@
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
-import fs from 'fs';
-import { pathToFileURL } from 'url';
 
 /** Matches cosmiconfig's `Loader` signature, which may also be synchronous. */
 type Loader = (filePath: string, content: string) => object | null | Promise<object | null>;
@@ -39,6 +37,15 @@ function rethrow(format: string, filePath: string, error: unknown): never {
   throw error;
 }
 
+/** Whether a failed `require` was really an ES module being fed to a CommonJS loader. */
+function isEsmFailure(error: unknown): boolean {
+  if ((error as NodeJS.ErrnoException | null)?.code === 'ERR_REQUIRE_ESM') {
+    return true;
+  }
+
+  return error instanceof SyntaxError && /Unexpected token '(export|import)'|Cannot use import statement/.test(error.message);
+}
+
 /**
  * Renders a JSONC parse error the way the other parsers phrase theirs: what
  * went wrong, and where. The parser reports a byte offset, so the line and
@@ -53,30 +60,45 @@ function describe(error: JSONCParseError, content: string): string {
 }
 
 const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'toml', Loader> = {
-  // A JavaScript build file is cached by Node, and cosmiconfig's own loader has
-  // no way to bust it — so an edited `buildium.config.js` would keep returning
-  // whatever it exported the first time it was read, for the whole session.
+  // Must be `require`, and must not be `import()`.
   //
-  // Node keeps *two* caches and each half of this evicts one of them, which is
-  // why both lines are needed. `require.cache` is what a CommonJS build file
-  // lives in, and it is also what the ESM loader's CJS bridge reads through, so
-  // deleting the entry alone is enough for `.cjs` — but not for an ESM file,
-  // whose namespace lives in the ESM registry that `require.cache` cannot reach.
-  // The ESM registry is keyed by URL and has no eviction API at all, so the only
-  // way past it is to ask for a URL it has not seen: hence the mtime query.
-  async javascript(filePath: string) {
+  // Package code runs in Pulsar's *renderer* process, where a dynamic `import()`
+  // reaching a `file:` URL from a CommonJS module does not throw — it kills the
+  // renderer outright, with no exception to catch and nothing written to the
+  // console. cosmiconfig's own JavaScript loader is written that way (it tries
+  // `import()` first and falls back to `require`), so registering this loader
+  // for `.cjs` and `.js` is what keeps that call from ever being made.
+  //
+  // `require` also has to be told to forget the file. Node caches by resolved
+  // path, so an edited build file would otherwise keep returning whatever it
+  // exported the first time it was read, for the rest of the session — and a
+  // refresh is precisely the moment it must be re-read.
+  javascript(filePath: string) {
     try {
-      try {
-        delete require.cache[require.resolve(filePath)];
-      } catch {
-        // Not resolvable as CommonJS — nothing cached under that name.
-      }
+      delete require.cache[require.resolve(filePath)];
+    } catch {
+      // Not resolvable — let `require` below report why.
+    }
 
-      const href = `${pathToFileURL(filePath).href}?mtime=${fs.statSync(filePath).mtimeMs}`;
-      const module = (await import(href)) as Record<string, unknown> | null;
+    try {
+      const module = require(filePath) as Record<string, unknown> | null;
 
       return (module && 'default' in module ? module.default : module) as object | null;
     } catch (error) {
+      // Atom's module loader compiles every file as CommonJS regardless of the
+      // nearest `package.json`, so an ESM build file fails to *parse* rather
+      // than raising `ERR_REQUIRE_ESM`. Either way the advice is the same, and
+      // the raw message ("Unexpected token 'export'") does not give it.
+      if (isEsmFailure(error)) {
+        rethrow(
+          'JavaScript',
+          filePath,
+          new SyntaxError(
+            'ES module syntax is not supported in a build file. Use `module.exports` instead, or move the configuration to a `.json`, `.toml` or `.yaml` file.'
+          )
+        );
+      }
+
       rethrow('JavaScript', filePath, error);
     }
   },
