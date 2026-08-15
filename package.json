@@ -55,10 +55,10 @@
   },
   "lint-staged": {
     "*.{js,ts,svelte}": [
-      "oxlint --fix",
-      "oxfmt"
+      "oxlint --fix --no-error-on-unmatched-pattern",
+      "oxfmt --no-error-on-unmatched-pattern"
     ],
-    "*.{json,md}": "oxfmt"
+    "*.{json,md}": "oxfmt --no-error-on-unmatched-pattern"
   },
   "engines": {
     "atom": ">=1.0.0"
