@@ -167,7 +167,7 @@ The following keybindings are for Windows and Linux, Mac should use <kbd>Cmd</kb
 
 ## License
 
-This work is licensed under [The MIT License](https://opensource.org/licenses/MIT)
+This work is licensed under [The MIT License](https://opensource.org/licenses/MIT).
 
 [build-providers]: https://atombuild.github.io/
 [packages]: https://packages.pulsar-edit.dev/packages/search?q=buildprovider
