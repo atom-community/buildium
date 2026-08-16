@@ -24,7 +24,7 @@
      build-target names read out of project files; interpolating them as HTML is
      an injection the component does not need.
   7. The query input is themed off the custom properties that
-     `styles/rosetta.*.less` bridges from the active theme's LESS variables, and
+     `@children-of-atom/rosetta` bridges from the active theme's LESS variables, and
      its focus ring follows the `.focus()` mixin every themed input goes through.
      Upstream's hard-coded `rgba(255, 255, 255, …)` renders it all but invisible
      on a dark theme, and its near-white focus ring matches nothing else in the
@@ -561,11 +561,12 @@
   /* Upstream hard-codes `rgba(255, 255, 255, …)` here, which is a 6%-white box on
      whatever the overlay background happens to be — invisible on a dark theme and
      wrong on a light one. These read the active theme's values instead:
-     `styles/rosetta.ui-variables.less` and `styles/rosetta.one-ui.less` import
-     the theme's `ui-variables` and re-declare each LESS variable as a matching
-     custom property on `:root`, which is the only way a compile-time `@variable`
-     can reach CSS that Svelte injects at runtime. The fallbacks stay, and carry
-     enough contrast either way, for names a given theme leaves undefined. */
+     `@children-of-atom/rosetta`, applied via `applyStyles()` on activation,
+     imports the theme's `ui-variables` and re-declares each LESS variable as a
+     matching custom property on `:root`, which is the only way a compile-time
+     `@variable` can reach CSS that Svelte injects at runtime. The fallbacks
+     stay, and carry enough contrast either way, for names a given theme leaves
+     undefined. */
   input.editor {
     display: block;
     width: 100%;

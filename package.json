@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@children-of-atom/dependency-manager": "^0.1.0",
+    "@children-of-atom/rosetta": "^0.1.0",
     "@children-of-atom/svelte-view": "^0.1.1",
     "@pulsar-edit/types": "^1.132.0",
     "@types/cross-spawn": "^6.0.6",

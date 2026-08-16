@@ -17,6 +17,8 @@ import Tools from './atom-build.ts';
 import { name } from '../package.json';
 import type { TextEditor } from 'atom';
 import type { BuildProviderConstructor, BusyProvider, ResolvedBuildTarget } from './types.ts';
+import { CompositeDisposable } from 'atom';
+import { applyStyles } from '@children-of-atom/rosetta';
 
 type BuildSource = 'trigger' | 'save';
 
@@ -28,6 +30,7 @@ type BuildChildProcess = ChildProcess & {
 
 export default {
   config: Config.schema,
+  disposables: null as unknown as CompositeDisposable,
 
   tools: [] as BuildProviderConstructor[],
   targetManager: null as unknown as TargetManager,
@@ -42,6 +45,9 @@ export default {
 
   activate(): void {
     DevConsole.log('Activating package');
+
+    this.disposables = new CompositeDisposable();
+    this.disposables.add(applyStyles());
 
     if (!process.platform.startsWith('win')) {
       // Manually append /usr/local/bin as it may not be set on some systems,
@@ -169,6 +175,8 @@ export default {
     this.saveConfirmView?.destroy();
     this.linter?.destroy();
     this.targetManager.destroy();
+
+    this.disposables.dispose();
   },
 
   updateStatusBar(): void {
