@@ -114,7 +114,27 @@ targets:
 
 </details>
 
-Please refer to the original documentation for details on [configuration options][config-options].
+#### Configuration Options
+
+| Option            | Type                        | Description                                                                                                                                                                                                                                       |
+| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cmd`             | `string`                    | The executable command                                                                                                                                                                                                                            |
+| `name`            | `string?`                   | The name of the target, shown in the targets list (toggled by `buildium:select-active-target`)                                                                                                                                                    |
+| `args`            | `string[]?`                 | An array of arguments for the command                                                                                                                                                                                                             |
+| `sh`              | `boolean?`                  | If `true`, the combined command and arguments are passed to `/bin/sh`. Defaults to `true`.                                                                                                                                                        |
+| `cwd`             | `string?`                   | The working directory for the command, i.e. what `.` resolves to                                                                                                                                                                                  |
+| `env`             | `Record<string, string>?`   | An object of environment variables and their values to set                                                                                                                                                                                        |
+| `errorMatch`      | `(string \| string[])?`     | A regular expression, or list thereof, matching output to a file, row and col. See [error matching][error-match] for details.                                                                                                                     |
+| `warningMatch`    | `(string \| string[])?`     | Like `errorMatch`, but reported as just a warning                                                                                                                                                                                                 |
+| `functionMatch`   | `(Function \| Function[])?` | **JS only**. A function, or list thereof, that returns a list of match objects                                                                                                                                                                    |
+| `keymap`          | `string?`                   | A [keymap string][keymaps], e.g. `ctrl-alt-k` or `cmd-U`. Pressing this key combination triggers the target.                                                                                                                                      |
+| `killSignals`     | `string[]?`                 | An array of signals, sent one after each time <kbd>Esc</kbd> is pressed until the process has terminated. Defaults to `SIGINT` → `SIGTERM` → `SIGKILL`; only `SIGKILL` is guaranteed to terminate the process, so it's recommended to include it. |
+| `atomCommandName` | `string?`                   | A command name of the form `namespace:command`, registered on the [command registry][command-registry]. It becomes available in the command palette and can be triggered from there.                                                              |
+| `targets`         | `Record<string, Target>?`   | Additional targets to build variations of your project. Any of the options above are viable here, except `targets` itself.                                                                                                                        |
+| `preBuild`        | `Function?`                 | **JS only**. Called _before_ executing `cmd`, with no arguments. `this` is the build configuration.                                                                                                                                               |
+| `postBuild`       | `Function?`                 | **JS only**. Called _after_ executing `cmd`, with three arguments: `boolean buildOutcome`, `string stdout` and `string stderr`. `this` is the build configuration.                                                                                |
+
+**Note:** A `?` suffix marks an optional value. `errorMatch`, `warningMatch` and `functionMatch` are individually optional, but at least one of them is needed to report build failures.
 
 #### Replacements
 
@@ -151,4 +171,6 @@ This work is licensed under [The MIT License](https://opensource.org/licenses/MI
 
 [build-providers]: https://atombuild.github.io/
 [packages]: https://packages.pulsar-edit.dev/packages/search?q=buildprovider
-[config-options]: https://github.com/noseglid/atom-build/blob/master/README.md#configuration-options
+[error-match]: https://github.com/noseglid/atom-build#error-match
+[keymaps]: https://docs.pulsar-edit.dev/infrastructure/keymaps-in-depth/
+[command-registry]: https://docs.pulsar-edit.dev/api/pulsar/latest/CommandRegistry/
