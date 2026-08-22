@@ -49,7 +49,7 @@ class Linter {
   private linter: IndieLinter;
 
   constructor(registry: LinterRegistry) {
-    this.linter = registry.register({ name: 'Build' });
+    this.linter = registry.register({ name: 'Buildium' });
   }
 
   destroy(): void {
