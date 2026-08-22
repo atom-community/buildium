@@ -1,4 +1,4 @@
-import { cosmiconfig } from 'cosmiconfig';
+import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
 import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
@@ -31,6 +31,8 @@ const explorer = cosmiconfig(pkg.name, {
     '.json5': loaders.json5,
     '.jsonc': loaders.jsonc,
     '.pkl': loaders.pkl,
+    '.yaml': defaultLoaders['.yaml'],
+    '.yml': defaultLoaders['.yml'],
     'noExt': loaders.jsonc
   }
 });
