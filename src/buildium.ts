@@ -9,7 +9,7 @@ import BuildView from './build-view.ts';
 import Config from './config.ts';
 import DevConsole from './log.ts';
 import ErrorMatcher from './error-matcher.ts';
-import Linter, { type LinterRegistry } from './linter-integration.ts';
+import Linter, { type RegisterIndie } from './linter-integration.ts';
 import SaveConfirmView from './save-confirm-view.ts';
 import StatusBarView, { type StatusBarService } from './status-bar-view.ts';
 import TargetManager from './target-manager.ts';
@@ -404,11 +404,11 @@ export default {
     }
   },
 
-  consumeLinterRegistry(registry: LinterRegistry): void {
+  consumeLinterIndie(registerIndie: RegisterIndie): void {
     DevConsole.log('Consuming linter');
 
     this.linter?.destroy();
-    this.linter = new Linter(registry);
+    this.linter = new Linter(registerIndie);
   },
 
   consumeBuilder(builder: BuildProviderConstructor | BuildProviderConstructor[]): Disposable {
