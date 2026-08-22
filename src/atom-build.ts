@@ -30,6 +30,7 @@ const explorer = cosmiconfig(pkg.name, {
     '.json': loaders.jsonc,
     '.json5': loaders.json5,
     '.jsonc': loaders.jsonc,
+    '.pkl': loaders.pkl,
     'noExt': loaders.jsonc
   }
 });
@@ -46,7 +47,9 @@ async function getConfig(file: string): Promise<BuildFileTarget | null> {
   const baseName = path.basename(realFile);
 
   if (Utils.legacyBuildFileNames.includes(baseName)) {
-    DevConsole.warn(`Deprecation warning: ${baseName} is a legacy build file name.`);
+    const fileExt = path.extname(realFile);
+
+    DevConsole.warn(`Deprecation warning: \`${baseName}\` is a legacy build file name. Use \`buildium.config${fileExt}\` instead`);
   }
 
   const result = await explorer.load(realFile);

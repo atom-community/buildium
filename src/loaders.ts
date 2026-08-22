@@ -1,4 +1,5 @@
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
+import { pklLoader } from 'cosmiconfig-loader-pkl';
 
 /** Matches cosmiconfig's `Loader` signature, which may also be synchronous. */
 type Loader = (filePath: string, content: string) => object | null | Promise<object | null>;
@@ -59,7 +60,7 @@ function describe(error: JSONCParseError, content: string): string {
   return `${parseErrorNames[error.error] ?? '<unknown ParseErrorCode>'} at line ${line}, column ${column}`;
 }
 
-const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'toml', Loader> = {
+const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml', Loader> = {
   // Must be `require`, and must not be `import()`.
   //
   // Package code runs in Pulsar's *renderer* process, where a dynamic `import()`
@@ -126,6 +127,16 @@ const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'toml', Loader> = {
     }
 
     return result;
+  },
+
+  // The odd one out: Pkl is evaluated by an external CLI rather than parsed
+  // from a string, so this takes the path and ignores `content`. That is what
+  // lets a build file use relative `amends`, `import` and `read()`, which a
+  // module handed over as source text cannot resolve. cosmiconfig reads
+  // `content` from this very path, so nothing is lost. The loader is async,
+  // hence `.catch` rather than `try`/`catch` — a rejection would sail past it.
+  pkl(filePath: string) {
+    return pklLoader(filePath).catch((error: unknown) => rethrow('Pkl', filePath, error)) as Promise<object | null>;
   },
 
   toml(filePath: string, content: string) {

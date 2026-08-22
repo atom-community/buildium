@@ -137,14 +137,27 @@ const buildFileNames = [
   'buildium.config.json5',
   'buildium.config.jsonc',
   'buildium.config.toml',
+  'buildium.config.pkl',
   'buildium.config.yaml',
   'buildium.config.yml',
+  '.buildium.cjs',
+  '.buildium.js',
+  '.buildium.json',
+  '.buildium.json5',
+  '.buildium.jsonc',
+  '.buildium.toml',
+  '.buildium.pkl',
+  '.buildium.yaml',
+  '.buildium.yml',
+
+  // Deprecated
   '.atom-build.cjs',
   '.atom-build.js',
   '.atom-build.json',
   '.atom-build.json5',
   '.atom-build.jsonc',
   '.atom-build.toml',
+  '.atom-build.pkl',
   '.atom-build.yaml',
   '.atom-build.yml'
 ];
