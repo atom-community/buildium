@@ -38,7 +38,11 @@ export function observeTerminalTheme(terminal: Terminal, element: HTMLElement): 
       background: readColor(styles, '--buildium-terminal-background'),
       cursor: readColor(styles, '--buildium-terminal-cursor'),
       cursorAccent: readColor(styles, '--buildium-terminal-cursor-accent'),
-      selectionBackground: readColor(styles, '--buildium-terminal-selection')
+      selectionBackground: readColor(styles, '--buildium-terminal-selection'),
+      // `@text-color-highlight` is opaque and bright, so xterm would paint the
+      // selection right over the glyphs — the foreground flips to the terminal
+      // background for the same reason `cursorAccent` does.
+      selectionForeground: readColor(styles, '--buildium-terminal-selection-foreground')
     };
 
     terminal.options.theme = theme;

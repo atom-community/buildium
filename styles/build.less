@@ -9,11 +9,12 @@
   // any stylesheet. These carry the theme's values to `terminal-theme.ts`, which
   // reads them off the computed style — so the terminal and the panel around it
   // are declared from one place, here.
-  --buildium-terminal-foreground: @text-color;
-  --buildium-terminal-background: @input-background-color;
-  --buildium-terminal-cursor: @text-color-highlight;
-  --buildium-terminal-cursor-accent: @input-background-color;
-  --buildium-terminal-selection: @background-color-info;
+  --buildium-terminal-foreground: var(--terminal-text-color, @text-color);
+  --buildium-terminal-background: var(--terminal-background-color, @input-background-color);
+  --buildium-terminal-cursor: var(--terminal-cursor-color, @text-color-highlight);
+  --buildium-terminal-cursor-accent: var(--terminal-cursor-color, @input-background-color);
+  --buildium-terminal-selection: var(--terminal-selection-background-color);
+  --buildium-terminal-selection-foreground: var(--terminal-selection-text-color);
 
   .resizer {
     opacity: 0;
