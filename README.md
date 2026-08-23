@@ -91,7 +91,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 </details>
 
 <details>
-<summary><strong>Example Config</strong></summary>️
+<summary><strong>Example config</strong></summary>️
 
 Let's take a look at a build file written in YAML
 
