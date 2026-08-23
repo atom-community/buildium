@@ -86,20 +86,6 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `buildium.config.pkl`
 - `buildium.config.yaml`
 - `buildium.config.yml`
-- `.buildium.cts`
-- `.buildium.mts`
-- `.buildium.ts`
-- `.buildium.cjs`
-- `.buildium.mjs`
-- `.buildium.js`
-- `.buildium.js`
-- `.buildium.json`
-- `.buildium.json5`
-- `.buildium.jsonc`
-- `.buildium.toml`
-- `.buildium.pkl`
-- `.buildium.yaml`
-- `.buildium.yml`
 
 </details>
 
