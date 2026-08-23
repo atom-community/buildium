@@ -84,6 +84,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `buildium.config.jsonc`
 - `buildium.config.toml`
 - `buildium.config.pkl`
+- `buildium.config.toml`
 - `buildium.config.yaml`
 - `buildium.config.yml`
 
