@@ -72,9 +72,6 @@ If no provider suits your specific needs, you can create a build file in your pr
 <details>
 <summary><strong>Supported config files</strong></summary>
 
-> [!NOTE]  
-> The configurations are listed in order of precedence
-
 - `package.json` with `buildium` object
 - `buildium.config.cts`
 - `buildium.config.mts`
@@ -107,7 +104,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 </details>
 
 <details>
-<summary><strong>Example</strong></summary>️
+<summary><strong>Example Config</strong></summary>️
 
 Let's take a look at a build file written in YAML
 
