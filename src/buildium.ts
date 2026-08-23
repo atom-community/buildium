@@ -433,7 +433,13 @@ export default {
     // the tile. A third call would only destroy and re-create it.
     this.statusBarView = new StatusBarView(statusBar);
     this.statusBarView.onClick(() => this.targetManager.selectActiveTarget());
-    this.targetManager.refreshTargets();
+
+    // Only the tile needs filling in, not the targets: `activate` already
+    // refreshes them, and refreshing again here re-read every build file a
+    // second time on every launch. If the service arrives before that first
+    // refresh finishes this is a no-op, and the `refresh-complete` handler in
+    // `setupTargetManager` fills the tile in when it lands.
+    this.updateStatusBar();
   },
 
   consumeBusySignal(registry: { create(): BusyProvider }): void {
