@@ -74,6 +74,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `buildium.config.mts`
 - `buildium.config.ts`
 - `buildium.config.cjs`
+- `buildium.config.mjs`
 - `buildium.config.js`
 - `buildium.config.json`
 - `buildium.config.json5`
@@ -86,6 +87,7 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `.buildium.mts`
 - `.buildium.ts`
 - `.buildium.cjs`
+- `.buildium.mjs`
 - `.buildium.js`
 - `.buildium.js`
 - `.buildium.json`

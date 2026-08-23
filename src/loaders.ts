@@ -1,6 +1,7 @@
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
 import { pklLoader } from 'cosmiconfig-loader-pkl';
 import { createJiti } from 'jiti';
+import path from 'path';
 
 /** Matches cosmiconfig's `Loader` signature, which may also be synchronous. */
 type Loader = (filePath: string, content: string) => object | null | Promise<object | null>;
@@ -81,7 +82,7 @@ function describe(error: JSONCParseError, content: string): string {
  */
 const jiti = createJiti('', { interopDefault: true, moduleCache: false, fsCache: false });
 
-const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml' | 'typescript', Loader> = {
+const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml' | 'transpiled', Loader> = {
   // Must be `require`, and must not be `import()`.
   //
   // Package code runs in Pulsar's *renderer* process, where a dynamic `import()`
@@ -166,10 +167,11 @@ const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml' | 'types
     }
   },
 
-  // TypeScript, and any build file written as an ES module. Neither `require`
-  // nor cosmiconfig's `loadJs` can read these: `loadJs` does no type stripping
-  // at all, so it falls back to `require`, which reads the source as CommonJS
-  // JavaScript and reports `Unexpected token 'export'`.
+  // Everything `require` cannot read, whether because of type annotations
+  // (`.ts`, `.mts`, `.cts`) or ESM syntax (`.mjs`, and the TypeScript ones
+  // again). cosmiconfig's `loadJs` cannot read them either: it does no type
+  // stripping at all, so it falls back to `require`, which parses the source as
+  // CommonJS JavaScript and reports `Unexpected token 'export'`.
   //
   // jiti transpiles and evaluates in-process, which also means the dynamic
   // `import()` described on the `javascript` loader is never reached. That is
@@ -178,11 +180,15 @@ const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml' | 'types
   // down is not an error anyone gets to see. jiti marks the synchronous call
   // deprecated in favour of `jiti.import()` "for better compatibility"; here
   // that trade runs the wrong way, so the deprecation is accepted knowingly.
-  typescript(filePath: string) {
+  //
+  // The format in the error message follows the extension rather than the
+  // loader: a failed `.mjs` is a JavaScript error, and saying otherwise would
+  // point the reader at a language their build file is not written in.
+  transpiled(filePath: string) {
     try {
       return unwrapDefault(jiti(filePath) as Record<string, unknown> | null);
     } catch (error) {
-      rethrow('TypeScript', filePath, error);
+      rethrow(path.extname(filePath).endsWith('js') ? 'JavaScript' : 'TypeScript', filePath, error);
     }
   }
 };

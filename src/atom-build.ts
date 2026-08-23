@@ -26,15 +26,16 @@ const explorer = cosmiconfig(pkg.name, {
   // Only the extensions whose built-in loader is wrong or missing. cosmiconfig
   // merges this map over `defaultLoaders`, so an extension left out here keeps
   // its built-in loader rather than losing support — and every entry present is
-  // a deliberate override. The JavaScript ones displace `loadJs`, which tries a
-  // dynamic `import()` first; `.mts`/`.cts`/`.ts` displace it too, since it does
-  // no type stripping at all. See `loaders.ts`.
+  // a deliberate override. `.js`/`.cjs` displace `loadJs`, which tries a dynamic
+  // `import()` first; the transpiled ones displace it too, since it does no type
+  // stripping and cannot read ESM here either. See `loaders.ts`.
   loaders: {
     '.cjs': loaders.javascript,
     '.js': loaders.javascript,
-    '.ts': loaders.typescript,
-    '.cts': loaders.typescript,
-    '.mts': loaders.typescript,
+    '.mjs': loaders.transpiled,
+    '.ts': loaders.transpiled,
+    '.cts': loaders.transpiled,
+    '.mts': loaders.transpiled,
     '.toml': loaders.toml,
     '.json': loaders.jsonc,
     '.json5': loaders.json5,
