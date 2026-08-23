@@ -46,7 +46,7 @@ function rootFor(filePath: string): string | undefined {
  *   none is picked up — which the per-provider `fs.watch` this replaces could
  *   never do, since it could only watch files that already existed.
  * - **The home directory** is not covered by that: `onDidChangeFiles` only
- *   watches open project paths. `~/.atom-build.*` acts as a fallback for every
+ *   watches open project paths. `~/.buildium.*` acts as a fallback for every
  *   project (see `CustomFile.isEligible`), so those paths are polled with
  *   `fs.watchFile`. Polling also sidesteps the Linux `fs.watch` quirk where
  *   closing a watcher fires another callback.
@@ -117,7 +117,7 @@ export default function watchBuildFiles(onChange: (roots: string[]) => void): Di
 
   // Every candidate name is polled, not just the ones that exist now:
   // `fs.watchFile` happily watches a path that is not there yet and reports it
-  // when it appears, which is how a newly created `~/.atom-build.json` is
+  // when it appears, which is how a newly created `~/.buildium.json` is
   // noticed. A home-directory build file feeds every project, so any change
   // invalidates all roots.
   const homeWatchers = Utils.homeBuildFileNames.map((fileName) => {

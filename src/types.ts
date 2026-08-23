@@ -34,7 +34,7 @@ export type BuildTarget = {
   /** Human-readable name, shown in the target list and status bar. */
   name: string;
 
-  /** The command to run. Named `cmd` in `.atom-build.*` files. */
+  /** The command to run. Named `cmd` in `.buildium.*` files. */
   exec: string;
 
   args?: string[];
@@ -70,7 +70,7 @@ export type ResolvedBuildTarget = BuildTarget &
   };
 
 /**
- * The shape of a single target in a `.atom-build.*` file or `package.json`.
+ * The shape of a single target in a `.buildium.*` file or `package.json`.
  */
 export type BuildFileTarget = Omit<BuildTarget, 'name' | 'exec'> & {
   name?: string;
