@@ -151,6 +151,15 @@ const buildFileNames = [
   '.buildium.yml',
 
   // Deprecated
+  'atom-build.config.cjs',
+  'atom-build.config.js',
+  'atom-build.config.json',
+  'atom-build.config.json5',
+  'atom-build.config.jsonc',
+  'atom-build.config.toml',
+  'atom-build.config.pkl',
+  'atom-build.config.yaml',
+  'atom-build.config.yml',
   '.atom-build.cjs',
   '.atom-build.js',
   '.atom-build.json',
@@ -162,8 +171,26 @@ const buildFileNames = [
   '.atom-build.yml'
 ];
 
-/** The legacy `.atom-build.*` subset, which is warned about when loaded. */
-const legacyBuildFileNames = buildFileNames.filter((file) => file.startsWith('.atom-build.'));
+/**
+ * How a legacy name maps to its current equivalent. Both shapes survived the
+ * rename, so the shape is preserved: a dotfile stays a dotfile, and a
+ * `*.config.*` file keeps that form.
+ */
+const legacyNameReplacements: [prefix: string, replacement: string][] = [
+  ['atom-build.config.', 'buildium.config.'],
+  ['.atom-build.', '.buildium.']
+];
+
+/**
+ * The current name a legacy build file should be renamed to, or `undefined` if
+ * the name is not a legacy one. The extension is left alone, so the same
+ * cosmiconfig loader keeps applying.
+ */
+function modernBuildFileName(baseName: string): string | undefined {
+  const replacement = legacyNameReplacements.find(([prefix]) => baseName.startsWith(prefix));
+
+  return replacement ? `${replacement[1]}${baseName.slice(replacement[0].length)}` : undefined;
+}
 
 /**
  * The subset valid as a home-directory fallback, which applies to every
@@ -173,4 +200,4 @@ const legacyBuildFileNames = buildFileNames.filter((file) => file.startsWith('.a
  */
 const homeBuildFileNames = buildFileNames.filter((file) => file !== 'package.json');
 
-export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, buildFileNames, legacyBuildFileNames, homeBuildFileNames };
+export { uniquifySettings, activePath, getDefaultSettings, replace, capitalizedName, getVersion, buildFileNames, modernBuildFileName, homeBuildFileNames };

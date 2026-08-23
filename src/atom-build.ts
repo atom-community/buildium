@@ -38,6 +38,69 @@ const explorer = cosmiconfig(pkg.name, {
 });
 
 /**
+ * Renames a legacy build file to its `buildium.config.*` equivalent, keeping the
+ * extension so the same loader still applies.
+ *
+ * No refresh is triggered here: a rename inside a project root is reported by
+ * `build-file-watcher.ts`, which refreshes the targets both names produce.
+ */
+async function renameLegacyFile(realFile: string, targetFile: string): Promise<void> {
+  try {
+    // `rename` would silently replace an existing file, and that file is a build
+    // config the user may well still be using
+    await fs.promises.access(targetFile, fs.constants.F_OK);
+
+    atom.notifications.addError('Could not rename the build file.', {
+      detail: `\`${path.basename(targetFile)}\` already exists in ${path.dirname(targetFile)}.`,
+      dismissable: true
+    });
+
+    return;
+  } catch {
+    // The target does not exist, which is what we want
+  }
+
+  try {
+    await fs.promises.rename(realFile, targetFile);
+  } catch (err) {
+    atom.notifications.addError('Could not rename the build file.', {
+      detail: (err as Error).message,
+      dismissable: true
+    });
+
+    return;
+  }
+
+  atom.notifications.addSuccess(`Renamed \`${path.basename(realFile)}\` to \`${path.basename(targetFile)}\``);
+}
+
+/**
+ * Warns that a build file uses a legacy name, offering to rename it in place.
+ */
+function warnLegacyName(realFile: string, baseName: string, targetName: string): void {
+  const message = `Deprecation warning: \`${baseName}\` is a legacy build file name. Use \`${targetName}\` instead.`;
+
+  DevConsole.warn(message);
+
+  const notification = atom.notifications.addWarning(message, {
+    dismissable: true,
+    buttons: [
+      {
+        text: `Rename Config File`,
+        onDidClick: () => {
+          notification.dismiss();
+          renameLegacyFile(realFile, path.join(path.dirname(realFile), targetName));
+        }
+      },
+      {
+        text: 'Ignore',
+        onDidClick: () => notification.dismiss()
+      }
+    ]
+  });
+}
+
+/**
  * Loads one build file. Returns `null` when the file holds no build
  * configuration at all — which is the common case for `package.json`, where
  * cosmiconfig yields an empty result unless the `buildium` object is present.
@@ -48,10 +111,10 @@ async function getConfig(file: string): Promise<BuildFileTarget | null> {
   const realFile = await fs.promises.realpath(file);
   const baseName = path.basename(realFile);
 
-  if (Utils.legacyBuildFileNames.includes(baseName)) {
-    const fileExt = path.extname(realFile);
+  const modernName = Utils.modernBuildFileName(baseName);
 
-    DevConsole.warn(`Deprecation warning: \`${baseName}\` is a legacy build file name. Use \`buildium.config${fileExt}\` instead`);
+  if (modernName) {
+    warnLegacyName(realFile, baseName, modernName);
   }
 
   const result = await explorer.load(realFile);
