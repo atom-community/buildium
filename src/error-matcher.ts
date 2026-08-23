@@ -99,10 +99,14 @@ export default class ErrorMatcher extends EventEmitter {
           }
 
           XRegExp.forEach(this.output, regex, (rawMatch, matchIndex) => {
-            const match = rawMatch as unknown as ErrorMatch;
-            match.id = `error-match-${i}-${matchIndex}`;
-            match.type = kind;
-            this.currentMatch.push(match);
+            // xregexp namespaces named captures under `groups` instead of
+            // putting them on the match itself, so they have to be lifted out
+            this.currentMatch.push({
+              ...(rawMatch as unknown as ErrorMatch),
+              ...(rawMatch.groups as unknown as ErrorMatch),
+              id: `error-match-${i}-${matchIndex}`,
+              type: kind
+            });
           });
         });
       });
