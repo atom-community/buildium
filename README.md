@@ -69,6 +69,8 @@ This package provides services that ”build providers” can consume, it provid
 
 If no provider suits your specific needs, you can create a build file in your project folder. A variety of file formats is supported, they need to match any of the following names:
 
+<details>
+<summary><strong>Supported config files</strong></summary>
 - `package.json` with `buildium` object
 - `buildium.config.cts`
 - `buildium.config.mts`
@@ -97,8 +99,10 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `.buildium.pkl`
 - `.buildium.yaml`
 - `.buildium.yml`
+</details>
 
-**Note:** The configurations above are listed in order of precedence
+> [!NOTE]  
+> The configurations above are listed in order of precedence
 
 <details>
 <summary><strong>Example</strong></summary>️
@@ -153,7 +157,8 @@ targets:
 | `preBuild`        | `Function?`                 | **JS only**. Called _before_ executing `cmd`, with no arguments. `this` is the build configuration.                                                                                                                                               |
 | `postBuild`       | `Function?`                 | **JS only**. Called _after_ executing `cmd`, with three arguments: `boolean buildOutcome`, `string stdout` and `string stderr`. `this` is the build configuration.                                                                                |
 
-**Note:** A `?` suffix marks an optional value. `errorMatch`, `warningMatch` and `functionMatch` are individually optional, but at least one of them is needed to report build failures.
+> [!NOTE]  
+> A `?` suffix marks an optional value. `errorMatch`, `warningMatch` and `functionMatch` are individually optional, but at least one of them is needed to report build failures.
 
 #### Replacements
 
