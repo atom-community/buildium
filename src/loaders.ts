@@ -1,5 +1,6 @@
 import { parseJSON5, parseJSONC, parseTOML, type JSONCParseError } from 'confbox';
 import { pklLoader } from 'cosmiconfig-loader-pkl';
+import { createJiti } from 'jiti';
 
 /** Matches cosmiconfig's `Loader` signature, which may also be synchronous. */
 type Loader = (filePath: string, content: string) => object | null | Promise<object | null>;
@@ -38,6 +39,18 @@ function rethrow(format: string, filePath: string, error: unknown): never {
   throw error;
 }
 
+/**
+ * Unwraps `export default`. A transpiled ES module arrives as `{ default: … }`,
+ * while `module.exports =` and `export =` arrive as the target itself — and a
+ * build file has no legitimate `default` key of its own to confuse this.
+ *
+ * jiti's `interopDefault` does not cover this: it leaves the wrapper in place
+ * for the modules it hands back here.
+ */
+function unwrapDefault(module: Record<string, unknown> | null): object | null {
+  return (module && 'default' in module ? module.default : module) as object | null;
+}
+
 /** Whether a failed `require` was really an ES module being fed to a CommonJS loader. */
 function isEsmFailure(error: unknown): boolean {
   if ((error as NodeJS.ErrnoException | null)?.code === 'ERR_REQUIRE_ESM') {
@@ -60,7 +73,15 @@ function describe(error: JSONCParseError, content: string): string {
   return `${parseErrorNames[error.error] ?? '<unknown ParseErrorCode>'} at line ${line}, column ${column}`;
 }
 
-const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml', Loader> = {
+/**
+ * Both caches are off for the reason the `javascript` loader clears
+ * `require.cache`: jiti memoises by resolved path in memory and writes
+ * transpiled output to disk, either of which would keep serving an edited build
+ * file's previous contents — and a refresh is precisely when it must be re-read.
+ */
+const jiti = createJiti('', { interopDefault: true, moduleCache: false, fsCache: false });
+
+const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml' | 'typescript', Loader> = {
   // Must be `require`, and must not be `import()`.
   //
   // Package code runs in Pulsar's *renderer* process, where a dynamic `import()`
@@ -82,9 +103,7 @@ const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml', Loader>
     }
 
     try {
-      const module = require(filePath) as Record<string, unknown> | null;
-
-      return (module && 'default' in module ? module.default : module) as object | null;
+      return unwrapDefault(require(filePath) as Record<string, unknown> | null);
     } catch (error) {
       // Atom's module loader compiles every file as CommonJS regardless of the
       // nearest `package.json`, so an ESM build file fails to *parse* rather
@@ -144,6 +163,26 @@ const loaders: Record<'javascript' | 'json5' | 'jsonc' | 'pkl' | 'toml', Loader>
       return parseTOML<object | null>(content);
     } catch (error) {
       rethrow('TOML', filePath, error);
+    }
+  },
+
+  // TypeScript, and any build file written as an ES module. Neither `require`
+  // nor cosmiconfig's `loadJs` can read these: `loadJs` does no type stripping
+  // at all, so it falls back to `require`, which reads the source as CommonJS
+  // JavaScript and reports `Unexpected token 'export'`.
+  //
+  // jiti transpiles and evaluates in-process, which also means the dynamic
+  // `import()` described on the `javascript` loader is never reached. That is
+  // why this is the synchronous `jiti()` call and not `jiti.import()` — the
+  // latter can hand the file to a native `import()`, and taking the renderer
+  // down is not an error anyone gets to see. jiti marks the synchronous call
+  // deprecated in favour of `jiti.import()` "for better compatibility"; here
+  // that trade runs the wrong way, so the deprecation is accepted knowingly.
+  typescript(filePath: string) {
+    try {
+      return unwrapDefault(jiti(filePath) as Record<string, unknown> | null);
+    } catch (error) {
+      rethrow('TypeScript', filePath, error);
     }
   }
 };

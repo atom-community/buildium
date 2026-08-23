@@ -70,6 +70,9 @@ This package provides services that ”build providers” can consume, it provid
 If no provider suits your specific needs, you can create a build file in your project folder. A variety of file formats is supported, they need to match any of the following names:
 
 - `package.json` with `buildium` object
+- `buildium.config.cts`
+- `buildium.config.mts`
+- `buildium.config.ts`
 - `buildium.config.cjs`
 - `buildium.config.js`
 - `buildium.config.json`
@@ -79,7 +82,11 @@ If no provider suits your specific needs, you can create a build file in your pr
 - `buildium.config.pkl`
 - `buildium.config.yaml`
 - `buildium.config.yml`
+- `.buildium.cts`
+- `.buildium.mts`
+- `.buildium.ts`
 - `.buildium.cjs`
+- `.buildium.js`
 - `.buildium.js`
 - `.buildium.json`
 - `.buildium.json5`

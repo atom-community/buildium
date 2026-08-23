@@ -131,6 +131,9 @@ function getVersion(): string {
  */
 const buildFileNames = [
   'package.json',
+  'buildium.config.cts',
+  'buildium.config.mts',
+  'buildium.config.ts',
   'buildium.config.cjs',
   'buildium.config.js',
   'buildium.config.json',
@@ -140,6 +143,9 @@ const buildFileNames = [
   'buildium.config.pkl',
   'buildium.config.yaml',
   'buildium.config.yml',
+  '.buildium.cts',
+  '.buildium.mts',
+  '.buildium.ts',
   '.buildium.cjs',
   '.buildium.js',
   '.buildium.json',

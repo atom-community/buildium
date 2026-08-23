@@ -1,4 +1,4 @@
-import { cosmiconfig, defaultLoaders } from 'cosmiconfig';
+import { cosmiconfig } from 'cosmiconfig';
 import EventEmitter from 'events';
 import fs from 'fs';
 import os from 'os';
@@ -23,16 +23,23 @@ const explorer = cosmiconfig(pkg.name, {
   // rare, so there is nothing here for a cache to win.
   cache: false,
 
+  // Only the extensions whose built-in loader is wrong or missing. cosmiconfig
+  // merges this map over `defaultLoaders`, so an extension left out here keeps
+  // its built-in loader rather than losing support — and every entry present is
+  // a deliberate override. The JavaScript ones displace `loadJs`, which tries a
+  // dynamic `import()` first; `.mts`/`.cts`/`.ts` displace it too, since it does
+  // no type stripping at all. See `loaders.ts`.
   loaders: {
     '.cjs': loaders.javascript,
     '.js': loaders.javascript,
+    '.ts': loaders.typescript,
+    '.cts': loaders.typescript,
+    '.mts': loaders.typescript,
     '.toml': loaders.toml,
     '.json': loaders.jsonc,
     '.json5': loaders.json5,
     '.jsonc': loaders.jsonc,
     '.pkl': loaders.pkl,
-    '.yaml': defaultLoaders['.yaml'],
-    '.yml': defaultLoaders['.yml'],
     'noExt': loaders.jsonc
   }
 });
